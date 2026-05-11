@@ -1,0 +1,14 @@
+Rakesh Home Ready Project
+
+Updated:
+- Branding changed to Rakesh Home
+- Your uploaded image added:
+  public/Textures/rakesh-wall.jpg
+- Website links connected:
+  1. https://rakesh-pdf2.netlify.app/
+  2. https://rakesh-pdf.netlify.app/
+  3. https://rakesh1.onrender.com/
+
+Run Project:
+npm install
+npm run dev
