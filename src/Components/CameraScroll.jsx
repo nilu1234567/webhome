@@ -30,15 +30,15 @@ export default function CameraScroll(props) {
     const threejsCertificationTextRef2 = useRef()
 
     const dut1TextRef = useRef()
-    const dut2TextRef = useRef()
+    // dut2TextRef removed — French subtitle deleted
     const dut3TextRef = useRef()
 
     const licence1TextRef = useRef()
-    const licence2TextRef = useRef()
+    // licence2TextRef removed — French subtitle deleted
     const licence3TextRef = useRef()
 
     const master1TextRef = useRef()
-    const master2TextRef = useRef()
+    // master2TextRef removed — French subtitle deleted
     const master3TextRef = useRef()
 
     const tabShader1TextRef = useRef()
@@ -54,6 +54,7 @@ export default function CameraScroll(props) {
     const sport2TextRef = useRef()
 
     const seeyouTextRef = useRef()
+    const supportTextRef = useRef()
 
     const [progress, setProgress] = useState(1)
     const [opacity, setOpacity] = useState(0)
@@ -106,6 +107,12 @@ export default function CameraScroll(props) {
                 x: 3.4
             }
         )
+        // FADE IN SUPPORT TEXT on entrance wall
+        tlRef.current.to(
+            supportTextRef.current.material,
+            { opacity: 1, duration: 0.5 },
+            "<50%"
+        )
 
         //GO TO REACT MUG
         tlRef.current.to(
@@ -126,7 +133,13 @@ export default function CameraScroll(props) {
                 z: 0,         
             
             }, "<"          
-        ) 
+        )
+        // FADE OUT SUPPORT TEXT before moving into the room
+        tlRef.current.to(
+            supportTextRef.current.material,
+            { opacity: 0, duration: 0.5 },
+            "<"
+        )
         tlRef.current.to(
             reactTextRef.current.material,
             {
@@ -417,12 +430,7 @@ export default function CameraScroll(props) {
                 opacity: 1,
             },"<40%"     
         )
-        tlRef.current.to(
-            dut2TextRef.current.material,
-            {
-                opacity: 1,
-            },"<"     
-        )
+        // dut2TextRef removed (French subtitle deleted)
         tlRef.current.to(
             dut3TextRef.current.material,
             {
@@ -446,12 +454,7 @@ export default function CameraScroll(props) {
                 opacity: 1,
             },"<40%"     
         )
-        tlRef.current.to(
-            licence2TextRef.current.material,
-            {
-                opacity: 1,
-            },"<"     
-        )
+        // licence2TextRef removed (French subtitle deleted)
         tlRef.current.to(
             licence3TextRef.current.material,
             {
@@ -476,12 +479,7 @@ export default function CameraScroll(props) {
                 opacity: 1,
             },"<40%"     
         )
-        tlRef.current.to(
-            master2TextRef.current.material,
-            {
-                opacity: 1,
-            },"<"     
-        )
+        // master2TextRef removed (French subtitle deleted)
         tlRef.current.to(
             master3TextRef.current.material,
             {
@@ -787,6 +785,22 @@ export default function CameraScroll(props) {
 
         <TvScreen progress={progress} opacity={opacity}/>      
 
+        {/* First Wall when entering door: RAKESH.QD.JE SUPPORT */}
+        <Text
+            ref={supportTextRef}
+            font="./fonts/Bangers.ttf"
+            position={[-0.52, 3.2, -1.3]}
+            rotation-y={Math.PI / 2}
+            fontSize={0.18}
+            color="#341e0f"
+            letterSpacing={0.02}
+            textAlign="center"
+            material-transparent={true}
+            material-opacity={0}
+        >
+            RAKESH.QD.JE SUPPORT
+        </Text>
+
         <Text
             ref={reactTextRef}
             font="./fonts/Bangers.ttf"
@@ -808,7 +822,7 @@ export default function CameraScroll(props) {
             color="#2d1d04"
             material-opacity={0}
         >
-            ThreeJS
+            RAKESH
         </Text>
 
         <Text
@@ -893,7 +907,7 @@ export default function CameraScroll(props) {
                 color="#2d1d04"
                 material-opacity={0}
             >
-                THREEJS CERTIFICATION
+                CERTIFIED IT PARTNER
             </Text>
             <Text
                 ref={threejsCertificationTextRef2}
@@ -904,7 +918,7 @@ export default function CameraScroll(props) {
                 color="#2d1d04"
                 material-opacity={0}
             >
-                BY BRUNO SIMON
+                BY RAKESH.QD.JE
             </Text>
         </group>
 
@@ -920,20 +934,9 @@ export default function CameraScroll(props) {
                 material-side={FrontSide}
                 material-opacity={0}
             >
-            Higher National Diploma in Computer Sciences
+            Diploma in Computer Science
             </Text>
-            <Text
-                ref={dut2TextRef}
-                font="./fonts/Bangers.ttf"
-                position={[-1.3, 3, -2.71]}
-                fontSize={0.02}
-                rotation-y={Math.PI/2}
-                color="#f4eadb"
-                material-side={FrontSide}
-                material-opacity={0}
-            >
-                (DUT informatique)
-            </Text>
+            {/* French DUT subtitle removed — no longer applicable */}
 
              <Text
                 ref={dut3TextRef}
@@ -945,7 +948,7 @@ export default function CameraScroll(props) {
                 material-side={FrontSide}
                 material-opacity={0}
             >
-                University of La Rochelle
+                MATS UNIVERSITY RAIPUR
             </Text>
         </group>
 
@@ -963,18 +966,7 @@ export default function CameraScroll(props) {
             >
             Bachelor’s degree in Computer Sciences
             </Text>
-            <Text
-                ref={licence2TextRef}
-                font="./fonts/Bangers.ttf"
-                position={[-2.4, 3.35, -3.3]}
-                fontSize={0.02}
-                rotation-y={Math.PI/2}
-                color="#f4eadb"
-                material-side={FrontSide}
-                material-opacity={0}
-            >
-                (Licence informatique)
-            </Text>
+            {/* French Licence subtitle removed — no longer applicable */}
 
              <Text
                 ref={licence3TextRef}
@@ -986,7 +978,7 @@ export default function CameraScroll(props) {
                 material-side={FrontSide}
                 material-opacity={0}
             >
-                University of La Rochelle
+                GGU BILASPUR
             </Text>
         </group>
 
@@ -1004,18 +996,7 @@ export default function CameraScroll(props) {
             >
             Master’s degree in Computer Sciences (In progress...)
             </Text>
-            <Text
-                ref={master2TextRef}
-                font="./fonts/Bangers.ttf"
-                position={[-3.6, 3.9, -2.85]}
-                fontSize={0.02}
-                rotation-y={Math.PI/2}
-                color="#f4eadb"
-                material-side={FrontSide}
-                material-opacity={0}
-            >
-                (Master informatique)
-            </Text>
+            {/* French Master subtitle removed — no longer applicable */}
 
              <Text
                 ref={master3TextRef}
@@ -1027,7 +1008,7 @@ export default function CameraScroll(props) {
                 material-side={FrontSide}
                 material-opacity={0}
             >
-                University of Bordeaux
+                MATS UNIVERSITY RAIPUR
             </Text>
         </group>
 

@@ -1,9 +1,12 @@
 import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
+import { useEffect } from 'react'
 
 export default function Walls(props)
 {  
     const [wallExtTexture, wallInTexture ] = useTexture(['./Textures/WallExt.jpg', './Textures/WallIn.jpg'])
+
+
 
     return <>
         <mesh

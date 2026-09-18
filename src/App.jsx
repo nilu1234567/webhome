@@ -26,7 +26,7 @@ export default function App() {
             curveRadius={ -50 }
             fontSize={ 5 }
           >
-            Rakesh Home
+            RAKESH WEB WORLD
         </Text>
       </Float>
 

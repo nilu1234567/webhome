@@ -1,16 +1,10 @@
-import { Analytics } from "@vercel/analytics/react"
-
 import ReactDOM from 'react-dom/client'
 import { Canvas } from '@react-three/fiber'
-import { Perf } from 'r3f-perf'
 import { StrictMode, Suspense } from 'react'
 
 import Loader from './Components/Loader.jsx'
 import App from './App.jsx'
 import './index.css'
-
-console.log("Hi if you notice a bug please contact me max2002guillon@gmail.com")
-
 
 const isMobile = () => {
     return ( ( window.innerWidth <= 1000 ) && ( window.innerHeight <= 800 ) );
@@ -38,41 +32,40 @@ root.render(
             {/*<Perf position="top-left" />*/}
         </Canvas>
 
-        <Analytics/>
+        {/* SEO fallback content — visible only when JavaScript is disabled */}
         <div style={{ display: "none" }}>
   <section aria-hidden="true">
-    <h1>Maxime Guillon - Creative Developer</h1>
-    <h2>Computer Science Student at Bordeaux University</h2>
-    <h2>Three.js and React Three Fiber Expert</h2>
-    <h2>Specialized in 3D Web Development</h2>
+    <h1>RAKESH.QD.JE - IT Company</h1>
+    <h2>Immersive Web Experiences & Full-Stack Development</h2>
+    <h2>Three.js and React Three Fiber 3D Solutions</h2>
+    <h2>Creative Technology Company based in Hyderabad</h2>
   </section>
   <section aria-hidden="true">
-    <h2>Skills and Expertise</h2>
+    <h2>Our Services</h2>
     <ul>
-      <li>Three.js Developer</li>
-      <li>React Three Fiber Developer</li>
-      <li>GSAP Developer</li>
+      <li>Three.js & WebGL Development</li>
+      <li>React Three Fiber Applications</li>
+      <li>GSAP Animation & Interactive Experiences</li>
       <li>3D Web Experiences</li>
-      <li>Creative Coding</li>
+      <li>Full-Stack Web Development</li>
     </ul>
   </section>
   <section aria-hidden="true">
     <p>
-      Welcome to the 3D portfolio of Maxime Guillon. This immersive portfolio has 
-      been created using React Three Fiber and GSAP, with custom 3D models designed 
-      in Blender. Explore innovative web experiences that blend creativity and technology.
+      Welcome to RAKESH.QD.JE — an IT company specialising in immersive web
+      experiences and creative technology. This interactive 3D portfolio is
+      built with React Three Fiber, GSAP, and custom Blender models.
+      Explore our projects at sharelink.rakesh.qd.je and file.rakesh.qd.je.
     </p>
   </section>
   <noscript>
     <p>
-      This 3D portfolio of Maxime Guillon showcases creative web development using 
-      React Three Fiber, Three.js, and GSAP. Please enable JavaScript to explore 
-      the immersive experience.
+      RAKESH.QD.JE is an IT company delivering immersive web development,
+      Three.js, and GSAP-powered experiences. Please enable JavaScript to
+      explore the interactive 3D portfolio.
     </p>
   </noscript>
 </div>
-
-
 
     </StrictMode>
 

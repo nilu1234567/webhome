@@ -1,121 +1,139 @@
-import { useRef } from "react" 
+import { useRef, useState } from "react"
 import { TextureLoader, Uniform } from 'three'
 import { useLoader, useFrame } from "@react-three/fiber"
+import { Html } from "@react-three/drei"
 
 import vertexShader from '../../shaders/tvnoise/vertex.glsl'
 import fragmentShader from '../../shaders/tvnoise/fragment.glsl'
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PROJECT LINKS — add new projects here as they launch under rakesh.qd.je
+// Each entry needs:
+//   label    : display name shown in the hover tooltip
+//   icon     : path to a flat PNG icon in public/logos/
+//   url      : the full URL to open on click
+//   position : [x, y, z] world position in the 3D scene
+//
+// When adding a 3rd icon, add a new row by decrementing y (e.g. y: 2.25).
+//
+// Example — copy this object to add a new project:
+// {
+//   label: "New Project",
+//   icon: "./logos/logoNewProject.png",
+//   url: "https://newproject.rakesh.qd.je",
+//   position: [0.45, 2.25, -3.48],
+// },
+// ─────────────────────────────────────────────────────────────────────────────
+const PROJECT_LINKS = [
+  {
+    label: "Share Link",
+    icon: "./logos/logoShareLink.png",
+    url: "https://sharelink.rakesh.qd.je",
+    position: [0.45, 2.45, -3.48],
+  },
+  {
+    label: "File Share",
+    icon: "./logos/logoFileShare.png",
+    url: "https://file.rakesh.qd.je/445",
+    position: [0.77, 2.45, -3.48],
+  },
+]
+
+const ICON_PATHS = PROJECT_LINKS.map((link) => link.icon)
+
 export default function TvScreen(props)
 {
-
     const planeRef = useRef()
     const logosRef = useRef()
 
+    // hoveredIndex: which icon the user is hovering (-1 = none)
+    const [hoveredIndex, setHoveredIndex] = useState(-1)
 
-    const githubTexture = useLoader(TextureLoader, "./logos/logoGithub.png");
-    const xTexture = useLoader(TextureLoader, "./logos/logoX.png");
-    const linledinTexture = useLoader(TextureLoader, "./logos/logoLinkedin.png");
-    const cvTexture = useLoader(TextureLoader, "./logos/logoCV.png");
-    const sourceTexture = useLoader(TextureLoader, "./logos/logoSource.png");
-    const workTexture = useLoader(TextureLoader, "./logos/work.png");
-   
+    const projectTextures = useLoader(TextureLoader, ICON_PATHS)
 
-      useFrame(({ clock }) => {
+    useFrame(({ clock }) => {
+        planeRef.current.material.uniforms.uTime.value = clock.getElapsedTime()
 
-        planeRef.current.material.uniforms.uTime.value = clock.getElapsedTime();
-       
-        logosRef.current.children.forEach((child) => {
-          if (child.material) {
-            child.material.opacity = props.opacity;
-          }
-        })
-      });
+        if (logosRef.current) {
+          logosRef.current.children.forEach((child) => {
+            if (child.material) {
+              child.material.opacity = props.opacity
+            }
+          })
+        }
+    })
 
-      const shaderMaterial = {
+    const shaderMaterial = {
         vertexShader: vertexShader,
         fragmentShader: fragmentShader,
         uniforms: {
           uTime: new Uniform(0),
           uProgress: new Uniform(props.progress)
         }
-    
-      }
+    }
 
     const handleClick = (url) => {
-      if(props.opacity > 0.9)
-      {
-        window.open(url, "_blank");
+      if (props.opacity > 0.9) {
+        window.open(url, "_blank")
       }
-        
-    };
+    }
 
-    return<>
+    return <>
+      <ambientLight intensity={1} />
 
-    <ambientLight intensity={1} />
-    <mesh position={[0.61, 2.35, -3.49]} ref={ planeRef }>
-        <planeGeometry args={[0.65, 0.45]} />
-        <shaderMaterial 
-          attach="material" 
-          args={[shaderMaterial]}  
-        />  
-    </mesh>
-    
-    <group ref={logosRef}>
-      <mesh 
-        position={[0.4, 2.45, -3.48]} 
-        scale={[0.09, 0.1, 0.1]} 
-        onClick={() => handleClick("https://rakesh-pdf2.netlify.app/")}
-      >
-        <planeGeometry/>
-        <meshBasicMaterial  map={githubTexture} transparent />
+      {/* TV noise / static shader plane */}
+      <mesh position={[0.61, 2.35, -3.49]} ref={planeRef}>
+          <planeGeometry args={[0.65, 0.45]} />
+          <shaderMaterial attach="material" args={[shaderMaterial]} />
       </mesh>
 
-      <mesh 
-        position={[0.6, 2.45, -3.48]} 
-        scale={[0.09, 0.1, 0.1]} 
-        onClick={() => handleClick("https://rakesh-pdf.netlify.app/")}
-      >
-        <planeGeometry/>
-        <meshBasicMaterial  map={xTexture} transparent />
-      </mesh>
+      {/* Project link icons with hover tooltip */}
+      <group ref={logosRef}>
+        {PROJECT_LINKS.map((link, i) => (
+          <mesh
+            key={link.label}
+            position={link.position}
+            scale={[0.13, 0.14, 0.14]}
+            onClick={() => handleClick(link.url)}
+            onPointerOver={() => setHoveredIndex(i)}
+            onPointerOut={() => setHoveredIndex(-1)}
+          >
+            <planeGeometry/>
+            <meshBasicMaterial map={projectTextures[i]} transparent />
 
-      <mesh 
-        position={[0.8, 2.45, -3.48]} 
-        scale={[0.09, 0.1, 0.1]} 
-        onClick={() => handleClick("https://rakesh1.onrender.com/")}
-      >
-        <planeGeometry/>
-        <meshBasicMaterial  map={linledinTexture} transparent />
-      </mesh>
-
-      <mesh 
-        position={[0.4, 2.25, -3.48]} 
-        scale={[0.07, 0.1, 0.1]}
-        onClick={() => handleClick("https://rakesh-pdf.netlify.app/")}
-      >
-        <planeGeometry/>
-        <meshBasicMaterial  map={cvTexture} transparent />
-      </mesh>
-
-      <mesh 
-        position={[0.6, 2.25, -3.48]} 
-        scale={[0.09, 0.1, 0.1]}
-        onClick={() => handleClick("https://rakesh-pdf2.netlify.app//KameHousePortfolio")}
-      >
-        <planeGeometry/>
-        <meshBasicMaterial  map={sourceTexture} transparent />
-      </mesh>
-
-      <mesh 
-        position={[0.8, 2.25, -3.48]} 
-        scale={[0.09, 0.12, 0.12]}
-        onClick={() => handleClick("https://rakesh1.onrender.com/")}
-      >
-        <planeGeometry/>
-        <meshBasicMaterial  map={workTexture} transparent />
-      </mesh>
-    </group>
-    
+            {/* Tooltip — shown on hover/touch */}
+            {hoveredIndex === i && (
+              <Html
+                position={[0, 1.2, 0]}
+                center
+                style={{ pointerEvents: 'none' }}
+              >
+                <div style={{
+                  background: 'rgba(0,0,0,0.85)',
+                  color: '#ffffff',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontFamily: 'monospace',
+                  fontWeight: 'bold',
+                  whiteSpace: 'nowrap',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                  letterSpacing: '0.5px',
+                  textAlign: 'center',
+                  lineHeight: '1.5',
+                }}>
+                  <div style={{ color: '#a0d4ff', fontSize: '11px', marginBottom: '2px' }}>
+                    {link.label}
+                  </div>
+                  <div style={{ color: '#e0e0e0', fontSize: '10px' }}>
+                    {link.url.replace('https://', '')}
+                  </div>
+                </div>
+              </Html>
+            )}
+          </mesh>
+        ))}
+      </group>
     </>
-
 }
