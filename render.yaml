@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: webhome1
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npx serve dist -s -l $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: 20
