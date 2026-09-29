@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<meta name="description" content="Chat room â€“ real-time messaging">
+<meta name="description" content="Chat room – real-time messaging">
 <title>Chat Room</title>
 <link rel="stylesheet" href="/chat/css/style.css">
 </head>
@@ -17,7 +17,7 @@
       <div class="room-status" id="roomStatus">connecting...</div>
     </div>
     <div class="header-actions">
-      <button class="icon-btn" title="Leave room" onclick="leaveRoom()">ðŸšª</button>
+      <button class="icon-btn" title="Leave room" onclick="leaveRoom()">🚪</button>
     </div>
   </div>
 
@@ -36,27 +36,27 @@
 
   <!-- Input Bar -->
   <div class="input-bar">
-    <button class="attach-btn" id="attachBtn" title="Attach image">ðŸ“Ž</button>
+    <button class="attach-btn" id="attachBtn" title="Attach image">📎</button>
     <input type="file" id="fileInput" accept="image/*" style="display:none">
     <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1"></textarea>
-    <button class="send-btn" id="sendBtn">âž¤</button>
+    <button class="send-btn" id="sendBtn">➤</button>
   </div>
 </div>
 
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <div class="lightbox-close">âœ•</div>
+  <div class="lightbox-close">✕</div>
   <img id="lightboxImg" src="" alt="Full size image">
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-// â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Init ───────────────────────────────────────────────
 const userInfo = JSON.parse(sessionStorage.getItem('chatUser') || '{}');
 const roomId = window.location.pathname.split('/').pop();
 
 if (!userInfo.name || !userInfo.roomId || userInfo.roomId !== roomId) {
-  window.location.href = '/';
+  window.location.href = '/chat';
 }
 
 const myName = userInfo.name;
@@ -64,7 +64,7 @@ const roomName = userInfo.roomName || 'Chat Room';
 
 document.getElementById('roomName').textContent = roomName;
 document.getElementById('roomAvatar').textContent = roomName[0]?.toUpperCase() || 'C';
-document.title = roomName + ' â€“ Chat';
+document.title = roomName + ' – Chat';
 
 const socket = io();
 const messagesArea = document.getElementById('messagesArea');
@@ -72,18 +72,18 @@ const msgInput = document.getElementById('msgInput');
 let typingTimer;
 let typingUsers = new Set();
 
-// â”€â”€ Socket events â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Socket events ──────────────────────────────────────
 socket.on('connect', () => {
-  document.getElementById('roomStatus').textContent = 'â— online';
+  document.getElementById('roomStatus').textContent = '● online';
   socket.emit('join_room', { roomId, userName: myName });
 });
 
 socket.on('disconnect', () => {
-  document.getElementById('roomStatus').textContent = 'â— offline';
+  document.getElementById('roomStatus').textContent = '● offline';
 });
 
 socket.on('participant_count', (count) => {
-  document.getElementById('roomStatus').textContent = `â— ${count} online`;
+  document.getElementById('roomStatus').textContent = `● ${count} online`;
 });
 
 socket.on('user_joined', ({ name }) => {
@@ -112,7 +112,7 @@ socket.on('user_stop_typing', () => {
   updateTyping();
 });
 
-// â”€â”€ Load history â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Load history ──────────────────────────────────────
 fetch('/messages/' + roomId)
   .then(r => r.json())
   .then(msgs => {
@@ -120,7 +120,7 @@ fetch('/messages/' + roomId)
     scrollToBottom();
   });
 
-// â”€â”€ Render message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Render message ────────────────────────────────────
 function renderMessage(msg) {
   const isMe = msg.sender_name === myName;
   const row = document.createElement('div');
@@ -180,7 +180,7 @@ function formatTime(ts) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// â”€â”€ Send message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Send message ───────────────────────────────────────
 function sendMessage() {
   const text = msgInput.value.trim();
   if (!text) return;
@@ -207,7 +207,7 @@ msgInput.addEventListener('input', () => {
   typingTimer = setTimeout(() => socket.emit('stop_typing', { roomId }), 2000);
 });
 
-// â”€â”€ Image upload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Image upload ───────────────────────────────────────
 document.getElementById('attachBtn').addEventListener('click', () => {
   document.getElementById('fileInput').click();
 });
@@ -230,7 +230,7 @@ document.getElementById('fileInput').addEventListener('change', async (e) => {
   e.target.value = '';
 });
 
-// â”€â”€ Typing indicator display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Typing indicator display ────────────────────────────
 function updateTyping() {
   const container = document.getElementById('typingIndicator');
   const textEl = document.getElementById('typingText');
@@ -244,14 +244,14 @@ function updateTyping() {
   }
 }
 
-// â”€â”€ Scroll â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Scroll ─────────────────────────────────────────────
 function scrollToBottom() {
   setTimeout(() => {
     messagesArea.scrollTop = messagesArea.scrollHeight;
   }, 50);
 }
 
-// â”€â”€ Lightbox â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Lightbox ───────────────────────────────────────────
 function openLightbox(src) {
   document.getElementById('lightboxImg').src = src;
   document.getElementById('lightbox').classList.add('show');
@@ -260,7 +260,7 @@ function closeLightbox() {
   document.getElementById('lightbox').classList.remove('show');
 }
 
-// â”€â”€ Mobile keyboard fix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Mobile keyboard fix ────────────────────────────────
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', () => {
     document.getElementById('chatPage').style.height = window.visualViewport.height + 'px';
@@ -269,10 +269,10 @@ if (window.visualViewport) {
 }
 msgInput.addEventListener('focus', () => setTimeout(scrollToBottom, 300));
 
-// â”€â”€ Leave room â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Leave room ─────────────────────────────────────────
 function leaveRoom() {
   sessionStorage.removeItem('chatUser');
-  window.location.href = '/';
+  window.location.href = '/chat';
 }
 </script>
 </body>

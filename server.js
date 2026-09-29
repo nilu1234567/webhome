@@ -145,7 +145,7 @@ app.post('/upload', upload.single('image'), (req, res) => {
 
 // ── Chat Pages ────────────────────────────────────────────────
 app.get('/chat',             (req, res) => res.sendFile(path.join(__dirname, 'chat', 'index.html')));
-app.get('/chat/room/:id',   (req, res) => res.sendFile(path.join(__dirname, 'chat', 'chat.html')));
+app.get('/chat/:id',   (req, res) => res.sendFile(path.join(__dirname, 'chat', 'chat.html')));
 app.get('/admin',            (req, res) => res.sendFile(path.join(__dirname, 'chat', 'admin-login.html')));
 app.get('/admin/dashboard',  (req, res) => res.sendFile(path.join(__dirname, 'chat', 'admin-dashboard.html')));
 

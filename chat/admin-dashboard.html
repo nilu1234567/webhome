@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<meta name="description" content="Admin Dashboard â€“ Chat app room management">
-<title>Admin Dashboard â€“ Chat</title>
+<meta name="description" content="Admin Dashboard – Chat app room management">
+<title>Admin Dashboard – Chat</title>
 <link rel="stylesheet" href="/chat/css/style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
   <!-- Header -->
   <div class="dash-header">
     <div class="dash-header-left">
-      <div class="icon">ðŸ›¡ï¸</div>
+      <div class="icon">🛡️</div>
       <div>
         <div class="dash-title">Admin Dashboard</div>
         <div class="dash-subtitle">Manage Chat Rooms</div>
@@ -25,17 +25,17 @@
     <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-icon">ðŸ </div>
+        <div class="stat-icon">🏠</div>
         <div class="stat-value" id="statRooms">0</div>
         <div class="stat-label">Rooms</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">ðŸ‘¥</div>
+        <div class="stat-icon">👥</div>
         <div class="stat-value" id="statOnline">0</div>
         <div class="stat-label">Online</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">ðŸ’¬</div>
+        <div class="stat-icon">💬</div>
         <div class="stat-value" id="statMsgs">0</div>
         <div class="stat-label">Messages</div>
       </div>
@@ -61,14 +61,14 @@
     <div class="form-group">
       <label class="form-label">Room Name</label>
       <div class="input-wrapper">
-        <span class="input-icon">ðŸ </span>
+        <span class="input-icon">🏠</span>
         <input id="roomNameInput" class="input-field" type="text" placeholder="e.g. Dev Team, Marketing" maxlength="50">
       </div>
     </div>
     <div class="error-msg" id="createError"></div>
     <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
       <button class="btn-secondary" style="flex:1;" onclick="closeCreateModal()">Cancel</button>
-      <button class="btn-primary" style="flex:2;" onclick="createRoom()">Create Room â†’</button>
+      <button class="btn-primary" style="flex:2;" onclick="createRoom()">Create Room →</button>
     </div>
   </div>
 </div>
@@ -102,7 +102,7 @@ function renderRooms() {
   document.getElementById('statMsgs').textContent = totalMsgs >= 1000 ? (totalMsgs/1000).toFixed(1)+'k' : totalMsgs;
 
   if (rooms.length === 0) {
-    list.innerHTML = `<div class="empty-state"><div class="emoji">ðŸ </div><p>No rooms yet. Create one to get started!</p></div>`;
+    list.innerHTML = `<div class="empty-state"><div class="emoji">🏠</div><p>No rooms yet. Create one to get started!</p></div>`;
     return;
   }
 
@@ -113,11 +113,11 @@ function renderRooms() {
         <div class="room-card-name">${escapeHtml(r.name)}</div>
         <div class="room-card-meta">
           <span class="code-badge">${r.code}</span>
-          <span class="count-badge">ðŸ‘¥ ${r.participantCount} online</span>
-          <span class="count-badge">ðŸ’¬ ${r.messageCount}</span>
+          <span class="count-badge">👥 ${r.participantCount} online</span>
+          <span class="count-badge">💬 ${r.messageCount}</span>
         </div>
       </div>
-      <button class="btn-danger" onclick="deleteRoom('${r.id}', '${escapeHtml(r.name)}')">ðŸ—‘ï¸</button>
+      <button class="btn-danger" onclick="deleteRoom('${r.id}', '${escapeHtml(r.name)}')">🗑️</button>
     </div>
   `).join('');
 }
