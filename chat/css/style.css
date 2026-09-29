@@ -909,3 +909,477 @@ html, body {
   white-space: nowrap;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+
+/* ==========================================================================
+   CORPORATE BRANDING & PRICING PLANS (RAKESH CHAT SERVICE / RAKESH.QD.JE)
+   ========================================================================== */
+
+/* Corporate Navbar */
+.corp-nav {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: relative;
+  z-index: 20;
+}
+.corp-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-decoration: none;
+}
+.corp-brand-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--gradient);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0A0E1A;
+  box-shadow: var(--gradient-glow);
+  font-size: 1.3rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.corp-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+.corp-brand-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.corp-brand-sub {
+  font-size: 0.72rem;
+  color: var(--primary-bright);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.corp-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.badge-certified {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  background: rgba(0,201,167,0.1);
+  border: 1px solid rgba(0,201,167,0.25);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  color: var(--primary-bright);
+  font-weight: 600;
+}
+@media (max-width: 720px) {
+  .badge-certified { display: none; }
+}
+.corp-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+.corp-nav-link:hover {
+  background: var(--surface-high);
+  border-color: var(--primary);
+  color: var(--primary-bright);
+  transform: translateY(-1px);
+}
+
+/* Corporate Hero */
+.corp-hero {
+  width: 100%;
+  max-width: 1200px;
+  margin: 1.5rem auto 3.5rem;
+  padding: 0 1.5rem;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 3rem;
+  align-items: center;
+  position: relative;
+  z-index: 10;
+}
+@media (max-width: 960px) {
+  .corp-hero {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    margin: 1rem auto 2.5rem;
+  }
+}
+.corp-hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.corp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  background: rgba(0,201,167,0.12);
+  border: 1px solid rgba(0,201,167,0.3);
+  border-radius: var(--radius-full);
+  color: var(--primary-bright);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  width: fit-content;
+}
+.corp-headline {
+  font-size: 2.75rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+@media (max-width: 600px) {
+  .corp-headline { font-size: 2.1rem; }
+}
+.corp-desc {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.corp-stats-row {
+  display: flex;
+  gap: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.corp-stat-item {
+  display: flex;
+  flex-direction: column;
+}
+.corp-stat-item .num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.1;
+}
+.corp-stat-item .label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+}
+
+/* Pricing Section */
+.pricing-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 2rem auto 4.5rem;
+  padding: 0 1.5rem;
+  position: relative;
+  z-index: 10;
+}
+.section-head {
+  text-align: center;
+  margin-bottom: 2.75rem;
+}
+.section-head .tag {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+  background: rgba(0,201,167,0.1);
+  padding: 0.25rem 0.8rem;
+  border-radius: var(--radius-full);
+}
+.section-head h2 {
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.6rem;
+}
+@media (max-width: 600px) {
+  .section-head h2 { font-size: 1.8rem; }
+}
+.section-head p {
+  color: var(--text-muted);
+  font-size: 1rem;
+  max-width: 620px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+  align-items: stretch;
+}
+@media (max-width: 990px) {
+  .pricing-grid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+.plan-card {
+  background: var(--surface-mid);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.plan-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(0,201,167,0.45);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.35);
+}
+
+.plan-card.featured {
+  background: linear-gradient(180deg, #172436 0%, #101524 100%);
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 32px rgba(0,201,167,0.22);
+  transform: scale(1.03);
+}
+@media (max-width: 990px) {
+  .plan-card.featured { transform: scale(1); }
+}
+
+.plan-popular-badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gradient);
+  color: #0A0E1A;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.35rem 1rem;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: var(--gradient-glow);
+  white-space: nowrap;
+}
+
+.plan-header { margin-bottom: 1.25rem; }
+.plan-name { font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 0.4rem; }
+.plan-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.45; }
+
+.plan-price-wrap {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 1.25rem 0 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.plan-currency { font-size: 1.5rem; font-weight: 800; color: #fff; }
+.plan-amount { font-size: 3rem; font-weight: 800; color: #fff; line-height: 1; }
+.plan-period { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; }
+.plan-save {
+  display: inline-block;
+  background: rgba(0,230,118,0.18);
+  color: var(--secondary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  margin-left: 0.4rem;
+  border: 1px solid rgba(0,230,118,0.3);
+}
+
+.plan-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 2.25rem;
+  flex: 1;
+}
+.plan-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+.feature-check {
+  color: var(--primary-bright);
+  font-size: 1.05rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.plan-cta-btn {
+  width: 100%;
+  padding: 0.9rem 1.25rem;
+  border-radius: var(--radius-full);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+.plan-cta-btn.secondary {
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  border: 1px solid var(--border-strong);
+}
+.plan-cta-btn.secondary:hover {
+  background: var(--surface-high);
+  border-color: var(--primary);
+  color: var(--primary-bright);
+  transform: translateY(-2px);
+}
+.plan-cta-btn.primary {
+  background: var(--gradient);
+  color: #0A0E1A;
+  border: none;
+  box-shadow: var(--gradient-glow);
+}
+.plan-cta-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,201,167,0.45);
+}
+
+/* Security Architecture Section */
+.security-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 1rem auto 4.5rem;
+  padding: 0 1.5rem;
+  position: relative;
+  z-index: 10;
+}
+.sec-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+@media (max-width: 860px) {
+  .sec-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 500px) {
+  .sec-grid { grid-template-columns: 1fr; }
+}
+.sec-card {
+  background: var(--surface-mid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+.sec-card:hover {
+  border-color: rgba(0,201,167,0.3);
+}
+.sec-card .sec-icon {
+  font-size: 2rem;
+  margin-bottom: 0.6rem;
+  display: inline-block;
+}
+.sec-card h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.35rem;
+}
+.sec-card p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* Corporate Footer */
+.corp-footer {
+  width: 100%;
+  border-top: 1px solid var(--border-strong);
+  background: rgba(10,14,26,0.98);
+  padding: 3rem 1.5rem 2.5rem;
+  position: relative;
+  z-index: 10;
+}
+.corp-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+.corp-footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.corp-footer-brand {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+}
+.corp-footer-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.corp-footer-desc a {
+  color: var(--primary-bright);
+  text-decoration: none;
+  font-weight: 600;
+}
+.corp-footer-desc a:hover {
+  text-decoration: underline;
+}
+.corp-footer-links {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.corp-footer-link {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+.corp-footer-link:hover {
+  color: var(--primary-bright);
+}

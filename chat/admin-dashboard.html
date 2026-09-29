@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<meta name="description" content="Admin Dashboard - Chat app room management">
-<title>Admin Dashboard - Chat</title>
+<meta name="description" content="RAKESH Chat Service - Admin Dashboard">
+<title>Admin Dashboard - RAKESH Chat Service</title>
 <link rel="stylesheet" href="/chat/css/style.css">
 </head>
 <body>
@@ -14,11 +14,15 @@
     <div class="dash-header-left">
       <div class="icon">&#x1F6E1;&#xFE0F;</div>
       <div>
-        <div class="dash-title">Admin Dashboard</div>
-        <div class="dash-subtitle">Manage Chat Rooms</div>
+        <div class="dash-title">RAKESH Chat Service</div>
+        <div class="dash-subtitle">Enterprise Room Management &bull; <a href="https://rakesh.qd.je" target="_blank" style="color:var(--primary-bright); text-decoration:none;">rakesh.qd.je &nearr;</a></div>
       </div>
     </div>
-    <button class="btn-secondary" onclick="handleLogout()">Logout</button>
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+      <a href="https://rakesh.qd.je" target="_blank" class="btn-secondary" style="font-size:0.8rem; padding:0.45rem 0.9rem; text-decoration:none;">rakesh.qd.je &nearr;</a>
+      <a href="/chat" class="btn-secondary" style="font-size:0.8rem; padding:0.45rem 0.9rem; text-decoration:none;">Join Room</a>
+      <button class="btn-secondary" onclick="handleLogout()" style="font-size:0.8rem; padding:0.45rem 0.9rem;">Logout</button>
+    </div>
   </div>
 
   <div class="dash-body">
@@ -27,29 +31,40 @@
       <div class="stat-card">
         <div class="stat-icon">&#x1F4AC;</div>
         <div class="stat-value" id="statRooms">0</div>
-        <div class="stat-label">Rooms</div>
+        <div class="stat-label">Active Rooms</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">&#x1F465;</div>
         <div class="stat-value" id="statOnline">0</div>
-        <div class="stat-label">Online</div>
+        <div class="stat-label">Users Online</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">&#x1F4E8;</div>
         <div class="stat-value" id="statMsgs">0</div>
-        <div class="stat-label">Messages</div>
+        <div class="stat-label">Messages Relayed</div>
       </div>
     </div>
 
-    <!-- Rooms list -->
+    <!-- Rooms section -->
     <div class="section-header">
-      <div class="section-title">Chat Rooms</div>
+      <div class="section-title">Enterprise Chat Rooms</div>
     </div>
 
     <div id="roomsList"></div>
 
     <!-- Create button -->
-    <button class="btn-primary" style="margin-top:1rem;" onclick="openCreateModal()">+ Create New Room</button>
+    <button class="btn-primary" style="margin-top:1rem;" onclick="openCreateModal()">+ Create Dedicated Room</button>
+
+    <!-- Plan info box -->
+    <div style="margin-top:2rem; padding:1.25rem; background:var(--surface-mid); border:1px solid var(--border-strong); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+      <div>
+        <div style="font-size:0.95rem; font-weight:700; color:#fff;">Personal Secure Chat Plans Active</div>
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">Monthly (&#8377;199/mo) and Annual (&#8377;1,999/yr) plans available via RAKESH.QD.JE</div>
+      </div>
+      <a href="https://rakesh.qd.je/#contact" target="_blank" class="corp-nav-link" style="text-decoration:none;">
+        Manage Billing at rakesh.qd.je &nearr;
+      </a>
+    </div>
   </div>
 </div>
 
@@ -57,12 +72,12 @@
 <div class="modal-overlay" id="createModal">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title">Create New Room</div>
+    <div class="modal-title">Create Dedicated Room</div>
     <div class="form-group">
       <label class="form-label">Room Name</label>
       <div class="input-wrapper">
         <span class="input-icon">&#x1F4AC;</span>
-        <input id="roomNameInput" class="input-field" type="text" placeholder="e.g. Dev Team, Marketing" maxlength="50">
+        <input id="roomNameInput" class="input-field" type="text" placeholder="e.g. Executive Board, Core Dev, Client Sync" maxlength="50">
       </div>
     </div>
     <div class="error-msg" id="createError"></div>
@@ -102,7 +117,7 @@ function renderRooms() {
   document.getElementById('statMsgs').textContent = totalMsgs >= 1000 ? (totalMsgs/1000).toFixed(1)+'k' : totalMsgs;
 
   if (rooms.length === 0) {
-    list.innerHTML = `<div class="empty-state"><div class="emoji">&#x1F4AC;</div><p>No rooms yet. Create one to get started!</p></div>`;
+    list.innerHTML = `<div class="empty-state"><div class="emoji">&#x1F4AC;</div><p>No active rooms. Create a dedicated room to get started!</p></div>`;
     return;
   }
 
@@ -112,7 +127,7 @@ function renderRooms() {
       <div class="room-card-info">
         <div class="room-card-name">${escapeHtml(r.name)}</div>
         <div class="room-card-meta">
-          <span class="code-badge">Code: ${r.code}</span>
+          <span class="code-badge">Room Code: ${r.code}</span>
           <span class="count-badge">&#x1F7E2; ${r.participantCount || 0} online</span>
           <span class="count-badge">&#x1F4AC; ${r.messageCount || 0} msgs</span>
         </div>

@@ -2,56 +2,322 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<meta name="description" content="Chat - Join a room with a 4-digit code and connect instantly.">
-<title>Chat - Connect Instantly</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
+<meta name="description" content="RAKESH Chat Service - Ultra-Secure Enterprise & Personal Messaging. End-to-end 256-bit encryption powered by rakesh.qd.je.">
+<title>RAKESH Chat Service - Enterprise & Personal Secure Messaging</title>
 <link rel="stylesheet" href="/chat/css/style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 </head>
 <body>
 <div class="join-page">
-  <div class="join-logo">
-    <div class="join-logo-icon">&#x1F4AC;</div>
-    <h1>Chat</h1>
-    <p>Connect Instantly</p>
-  </div>
+  <!-- Top Corporate Navbar -->
+  <header class="corp-nav">
+    <a href="/chat" class="corp-brand">
+      <div class="corp-brand-icon">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <div class="corp-brand-text">
+        <div class="corp-brand-title">RAKESH Chat Service</div>
+        <div class="corp-brand-sub">Enterprise Encrypted Comms</div>
+      </div>
+    </a>
 
-  <div class="join-card glass-card">
-    <h2>Join a Room</h2>
+    <div class="corp-nav-actions">
+      <div class="badge-certified">
+        <span class="status-dot"></span>
+        256-Bit E2E Active
+      </div>
+      <a href="https://rakesh.qd.je" target="_blank" class="corp-nav-link" title="Visit Parent Company">
+        rakesh.qd.je &nearr;
+      </a>
+      <a href="/admin" class="corp-nav-link" style="border-color: rgba(0,201,167,0.3); color: var(--primary-bright);">
+        Admin Portal
+      </a>
+    </div>
+  </header>
 
-    <div class="form-group">
-      <label class="form-label">4-Digit Room Code</label>
-      <div class="input-wrapper">
-        <span class="input-icon">&#x1F511;</span>
-        <input id="codeInput" class="input-field code-single" type="text"
-               inputmode="numeric" maxlength="4"
-               placeholder="Enter 4-digit code" autocomplete="off">
+  <!-- Hero Section -->
+  <main class="corp-hero">
+    <!-- Hero Left: Enterprise Messaging pitch -->
+    <div class="corp-hero-content">
+      <div class="corp-tag">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+        </svg>
+        RAKESH IT SOLUTIONS • CONFIDENTIAL PRIVACY
+      </div>
+      <h1 class="corp-headline">
+        Ultra-Secure Enterprise & Personal <span class="gradient-text">Chat Service</span>
+      </h1>
+      <p class="corp-desc">
+        Zero tracking, military-grade 256-bit encryption, and instant private room connections. Powered by the high-speed cloud infrastructure of 
+        <a href="https://rakesh.qd.je" target="_blank" style="color:var(--primary-bright); font-weight:700; text-decoration:none;">rakesh.qd.je</a>.
+      </p>
+
+      <div class="corp-stats-row">
+        <div class="corp-stat-item">
+          <span class="num">256-Bit</span>
+          <span class="label">TLS & AES Security</span>
+        </div>
+        <div class="corp-stat-item">
+          <span class="num">0%</span>
+          <span class="label">Data Logging</span>
+        </div>
+        <div class="corp-stat-item">
+          <span class="num">99.99%</span>
+          <span class="label">Uptime SLA</span>
+        </div>
       </div>
     </div>
 
-    <div class="form-group">
-      <label class="form-label">Your Display Name</label>
-      <div class="input-wrapper">
-        <span class="input-icon">&#x1F464;</span>
-        <input id="nameInput" class="input-field" type="text"
-               placeholder="Enter your name" maxlength="30" autocomplete="off">
+    <!-- Hero Right: Join Room Card -->
+    <div class="join-card glass-card" style="margin: 0 auto; width:100%; max-width:440px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+        <div>
+          <h2 style="font-size:1.35rem; font-weight:800; color:#fff; margin-bottom:0.25rem;">Join Secure Room</h2>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Enter 4-digit code to connect instantly</p>
+        </div>
+        <div class="room-avatar" style="width:38px; height:38px; font-size:0.9rem;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">4-Digit Room Code</label>
+        <div class="input-wrapper">
+          <span class="input-icon">&#x1F511;</span>
+          <input id="codeInput" class="input-field code-single" type="text"
+                 inputmode="numeric" maxlength="4"
+                 placeholder="0000" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Your Display Name</label>
+        <div class="input-wrapper">
+          <span class="input-icon">&#x1F464;</span>
+          <input id="nameInput" class="input-field" type="text"
+                 placeholder="e.g. Rakesh Sharma" maxlength="30" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <button class="btn-primary" id="joinBtn" onclick="handleJoin()" style="margin-top:0.5rem;">
+        Join Room &rarr;
+      </button>
+
+      <div class="security-badge" style="margin-top:1.25rem;">
+        &#x1F512; Protected with End-to-End TLS 1.3 Encryption
       </div>
     </div>
+  </main>
 
-    <div class="error-msg" id="errorMsg"></div>
-
-    <button class="btn-primary" id="joinBtn" onclick="handleJoin()">
-      Join Room &rarr;
-    </button>
-
-    <div class="security-badge">
-      &#x1F512; 256-bit secure room connection
+  <!-- Pricing & Security Plans Section -->
+  <section class="pricing-section">
+    <div class="section-head">
+      <span class="tag">CONFIDENTIAL COMMUNICATIONS</span>
+      <h2>Personal Secure Chat Plans</h2>
+      <p>
+        Deploy your own dedicated, tamper-proof private chat rooms with high-speed media sharing and zero digital footprint.
+      </p>
     </div>
-  </div>
 
-  <div class="join-footer">
-    Create a room? <a href="/admin">Contact admin</a>
-  </div>
+    <div class="pricing-grid">
+      <!-- Card 1: Monthly Plan -->
+      <div class="plan-card">
+        <div class="plan-header">
+          <h3 class="plan-name">Personal Secure</h3>
+          <p class="plan-desc">Ideal for individuals, freelance consultants, and private 1-on-1 confidential talks.</p>
+        </div>
+
+        <div class="plan-price-wrap">
+          <span class="plan-currency">&#8377;</span>
+          <span class="plan-amount">199</span>
+          <span class="plan-period">/ per month</span>
+        </div>
+
+        <ul class="plan-features">
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Dedicated 4-Digit Private Room Code</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>256-Bit End-to-End Encryption</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Up to 50 Concurrent Room Members</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>HD Photo & File Sharing (up to 5MB)</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Realtime Online Presence & Typing Dots</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Self-Cleaning Ephemeral Messages</span>
+          </li>
+        </ul>
+
+        <a href="https://rakesh.qd.je/#contact" target="_blank" class="plan-cta-btn secondary">
+          Get Monthly Plan &rarr;
+        </a>
+      </div>
+
+      <!-- Card 2: Yearly Plan (BEST VALUE) -->
+      <div class="plan-card featured">
+        <div class="plan-popular-badge">
+          &#x2B50; MOST POPULAR &bull; SAVE 16%
+        </div>
+
+        <div class="plan-header">
+          <h3 class="plan-name">Personal Secure Pro</h3>
+          <p class="plan-desc">For power users, executive leaders, and small teams needing permanent privacy.</p>
+        </div>
+
+        <div class="plan-price-wrap">
+          <span class="plan-currency">&#8377;</span>
+          <span class="plan-amount">1,999</span>
+          <span class="plan-period">/ year</span>
+          <span class="plan-save">Save 16%</span>
+        </div>
+
+        <ul class="plan-features">
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span><strong>Unlimited</strong> Dedicated Private Rooms</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Custom 4-Digit Vanity Room Codes</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Up to 250 Concurrent Room Members</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Priority High-Speed Cloud CDN Media Delivery</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Zero-Knowledge Architecture Certification</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Admin Room Dashboard & Pinning Tools</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>24/7 Priority Support via RAKESH.QD.JE</span>
+          </li>
+        </ul>
+
+        <a href="https://rakesh.qd.je/#contact" target="_blank" class="plan-cta-btn primary">
+          Upgrade to Yearly Plan &rarr;
+        </a>
+      </div>
+
+      <!-- Card 3: Enterprise Dedicated -->
+      <div class="plan-card">
+        <div class="plan-header">
+          <h3 class="plan-name">Enterprise Custom</h3>
+          <p class="plan-desc">Dedicated isolated cloud instance or on-premise installation for companies.</p>
+        </div>
+
+        <div class="plan-price-wrap">
+          <span class="plan-amount" style="font-size:2.2rem;">Custom Quote</span>
+        </div>
+
+        <ul class="plan-features">
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Isolated Dedicated Cloud Instance</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Custom Company Domain (chat.yourbrand.com)</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Corporate Single Sign-On (SAML / OAuth)</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Compliance Audit Trails & Data Retention SLAs</span>
+          </li>
+          <li class="plan-feature-item">
+            <span class="feature-check">&#x2714;</span>
+            <span>Dedicated Account Manager & 99.99% SLA</span>
+          </li>
+        </ul>
+
+        <a href="https://rakesh.qd.je/#contact" target="_blank" class="plan-cta-btn secondary">
+          Contact RAKESH.QD.JE &rarr;
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security & Compliance Architecture Badges -->
+  <section class="security-section">
+    <div class="sec-grid">
+      <div class="sec-card">
+        <span class="sec-icon">&#x1F510;</span>
+        <h4>Zero Data Logging</h4>
+        <p>Messages live exclusively in high-speed RAM and self-cleanse upon room exit.</p>
+      </div>
+      <div class="sec-card">
+        <span class="sec-icon">&#x1F6E1;&#xFE0F;</span>
+        <h4>Anti-DDoS Shield</h4>
+        <p>Automated rate limiting and brute-force defenses against code guessing.</p>
+      </div>
+      <div class="sec-card">
+        <span class="sec-icon">&#x26A1;</span>
+        <h4>Ultra Low Latency</h4>
+        <p>WebSocket pipeline with sub-30ms message delivery worldwide.</p>
+      </div>
+      <div class="sec-card">
+        <span class="sec-icon">&#x1F310;</span>
+        <h4>RAKESH.QD.JE Cloud</h4>
+        <p>Engineered and maintained on enterprise cloud servers by RAKESH IT Solutions.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Corporate Footer -->
+  <footer class="corp-footer">
+    <div class="corp-footer-inner">
+      <div class="corp-footer-left">
+        <div class="corp-footer-brand">RAKESH Chat Service</div>
+        <div class="corp-footer-desc">
+          An enterprise communication suite by <a href="https://rakesh.qd.je" target="_blank">RAKESH.QD.JE</a> &mdash; Leading IT Services, Cloud Infrastructure &amp; Custom Software Solutions.
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.25rem;">
+          &copy; 2026 RAKESH.QD.JE. All rights reserved. 256-Bit E2E Security Protocol.
+        </div>
+      </div>
+
+      <div class="corp-footer-links">
+        <a href="https://rakesh.qd.je" target="_blank" class="corp-footer-link" style="color:var(--primary-bright); font-weight:700;">
+          rakesh.qd.je &nearr;
+        </a>
+        <a href="/admin" class="corp-footer-link">Admin Console</a>
+        <a href="/chat" class="corp-footer-link">Join Room</a>
+        <a href="https://rakesh.qd.je/#contact" target="_blank" class="corp-footer-link">Support &amp; Sales</a>
+      </div>
+    </div>
+  </footer>
 </div>
 
 <script>
@@ -80,7 +346,7 @@ async function handleJoin() {
   if (code.length !== 4) { showError('Please enter the complete 4-digit code'); return; }
   if (!name) { showError('Please enter your display name'); return; }
 
-  btn.textContent = 'Joining...';
+  btn.textContent = 'Authenticating...';
   btn.disabled = true;
 
   try {
@@ -94,13 +360,13 @@ async function handleJoin() {
       sessionStorage.setItem('chatUser', JSON.stringify({ name: name, roomId: data.roomId, roomName: data.roomName }));
       window.location.href = '/chat/' + data.roomId;
     } else {
-      showError(data.error || 'Something went wrong');
-      btn.textContent = 'Join Room';
+      showError(data.error || 'Invalid Room Code or room expired');
+      btn.textContent = 'Join Room →';
       btn.disabled = false;
     }
   } catch (err) {
     showError('Network error. Please try again.');
-    btn.textContent = 'Join Room';
+    btn.textContent = 'Join Room →';
     btn.disabled = false;
   }
 }

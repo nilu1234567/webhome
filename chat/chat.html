@@ -13,13 +13,25 @@
   <div class="chat-header">
     <div class="room-avatar" id="roomAvatar">C</div>
     <div class="room-info">
-      <div class="room-name" id="roomName">Loading...</div>
-      <div class="room-status" id="roomStatus">
-        <span class="status-dot" id="statusDot"></span>
-        <span id="statusText">connecting...</span>
+      <div style="display:flex; align-items:center; gap:0.4rem;">
+        <div class="room-name" id="roomName">Loading...</div>
+        <span style="font-size:0.62rem; background:rgba(0,201,167,0.15); color:var(--primary-bright); padding:0.1rem 0.45rem; border-radius:999px; font-weight:700; letter-spacing:0.04em;">E2E 256-BIT</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:0.45rem; font-size:0.75rem;">
+        <div class="room-status" id="roomStatus">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">connecting...</span>
+        </div>
+        <span style="color:var(--border-strong);">|</span>
+        <a href="https://rakesh.qd.je" target="_blank" style="color:var(--text-muted); font-size:0.72rem; text-decoration:none; font-weight:600;">
+          rakesh.qd.je &nearr;
+        </a>
       </div>
     </div>
     <div class="header-actions">
+      <a href="https://rakesh.qd.je" target="_blank" class="corp-nav-link" style="padding:0.35rem 0.75rem; font-size:0.75rem; text-decoration:none;" title="Parent Company Website">
+        rakesh.qd.je &nearr;
+      </a>
       <button class="icon-btn" title="Leave room" onclick="leaveRoom()" aria-label="Leave room">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -86,7 +98,7 @@ const roomName = userInfo.roomName || 'Chat Room';
 
 document.getElementById('roomName').textContent = roomName;
 document.getElementById('roomAvatar').textContent = roomName[0]?.toUpperCase() || 'C';
-document.title = roomName + ' - Chat';
+document.title = roomName + ' - RAKESH Chat Service';
 
 const socket = io();
 const messagesArea = document.getElementById('messagesArea');

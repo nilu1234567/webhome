@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<meta name="description" content="Admin login - Chat app management">
-<title>Admin Login - Chat</title>
+<meta name="description" content="RAKESH Chat Service - Enterprise Admin Console">
+<title>Admin Portal - RAKESH Chat Service</title>
 <link rel="stylesheet" href="/chat/css/style.css">
 </head>
 <body>
@@ -12,13 +12,15 @@
   <div class="admin-login-card">
     <div class="admin-logo">
       <div class="icon">&#x1F6E1;&#xFE0F;</div>
-      <h1>Admin Panel</h1>
-      <p>Manage your chat rooms</p>
+      <h1 style="font-size:1.55rem; font-weight:800;">RAKESH Chat Service</h1>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">
+        Enterprise Admin Console &bull; <a href="https://rakesh.qd.je" target="_blank" style="color:var(--primary-bright); text-decoration:none; font-weight:600;">rakesh.qd.je &nearr;</a>
+      </p>
     </div>
 
     <div class="glass-card">
       <div class="form-group">
-        <label class="form-label">Password</label>
+        <label class="form-label">Admin Security Password</label>
         <div class="input-wrapper">
           <span class="input-icon">&#x1F511;</span>
           <input id="passInput" class="input-field" type="password" placeholder="Enter admin password" autocomplete="current-password">
@@ -27,11 +29,16 @@
 
       <div class="error-msg" id="errorMsg"></div>
 
-      <button class="btn-primary" onclick="handleLogin()">Sign In &rarr;</button>
+      <button class="btn-primary" onclick="handleLogin()" style="margin-top:0.5rem;">
+        Authenticate &rarr;
+      </button>
     </div>
 
-    <div class="join-footer" style="margin-top:1rem;">
-      <a href="/chat">&larr; Back to join screen</a>
+    <div class="join-footer" style="margin-top:1.5rem; display:flex; flex-direction:column; gap:0.5rem; align-items:center;">
+      <a href="/chat">&larr; Back to Join Room</a>
+      <span style="font-size:0.75rem; color:var(--text-muted);">
+        A product of <a href="https://rakesh.qd.je" target="_blank" style="color:var(--primary-bright); text-decoration:none; font-weight:600;">RAKESH.QD.JE</a> IT Solutions
+      </span>
     </div>
   </div>
 </div>
@@ -51,11 +58,11 @@ async function handleLogin() {
     const data = await res.json();
     if (res.ok) window.location.href = '/admin/dashboard';
     else {
-      errEl.textContent = data.error || 'Login failed';
+      errEl.textContent = data.error || 'Authentication failed';
       errEl.classList.add('show');
     }
   } catch {
-    errEl.textContent = 'Network error';
+    errEl.textContent = 'Network error. Please try again.';
     errEl.classList.add('show');
   }
 }
