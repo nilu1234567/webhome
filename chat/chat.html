@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="description" content="Chat room â€“ real-time messaging">
+<title>Chat Room</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="chat-page" id="chatPage">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="room-avatar" id="roomAvatar">C</div>
+    <div class="room-info">
+      <div class="room-name" id="roomName">Loading...</div>
+      <div class="room-status" id="roomStatus">connecting...</div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" title="Leave room" onclick="leaveRoom()">ðŸšª</button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="messages-area" id="messagesArea">
+    <div class="date-divider">Today</div>
+  </div>
+
+  <!-- Typing indicator -->
+  <div style="padding: 0 1rem 0.25rem; flex-shrink:0;" id="typingContainer">
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+      <span class="typing-text" id="typingText">typing...</span>
+    </div>
+  </div>
+
+  <!-- Input Bar -->
+  <div class="input-bar">
+    <button class="attach-btn" id="attachBtn" title="Attach image">ðŸ“Ž</button>
+    <input type="file" id="fileInput" accept="image/*" style="display:none">
+    <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1"></textarea>
+    <button class="send-btn" id="sendBtn">âž¤</button>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-close">âœ•</div>
+  <img id="lightboxImg" src="" alt="Full size image">
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+// â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const userInfo = JSON.parse(sessionStorage.getItem('chatUser') || '{}');
+const roomId = window.location.pathname.split('/').pop();
+
+if (!userInfo.name || !userInfo.roomId || userInfo.roomId !== roomId) {
+  window.location.href = '/';
+}
+
+const myName = userInfo.name;
+const roomName = userInfo.roomName || 'Chat Room';
+
+document.getElementById('roomName').textContent = roomName;
+document.getElementById('roomAvatar').textContent = roomName[0]?.toUpperCase() || 'C';
+document.title = roomName + ' â€“ Chat';
+
+const socket = io();
+const messagesArea = document.getElementById('messagesArea');
+const msgInput = document.getElementById('msgInput');
+let typingTimer;
+let typingUsers = new Set();
+
+// â”€â”€ Socket events â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+socket.on('connect', () => {
+  document.getElementById('roomStatus').textContent = 'â— online';
+  socket.emit('join_room', { roomId, userName: myName });
+});
+
+socket.on('disconnect', () => {
+  document.getElementById('roomStatus').textContent = 'â— offline';
+});
+
+socket.on('participant_count', (count) => {
+  document.getElementById('roomStatus').textContent = `â— ${count} online`;
+});
+
+socket.on('user_joined', ({ name }) => {
+  addSystemMsg(`${name} joined the room`);
+});
+
+socket.on('user_left', ({ name }) => {
+  addSystemMsg(`${name} left the room`);
+  typingUsers.delete(name);
+  updateTyping();
+});
+
+socket.on('receive_message', (msg) => {
+  renderMessage(msg);
+  scrollToBottom();
+});
+
+socket.on('user_typing', ({ name }) => {
+  if (name === myName) return;
+  typingUsers.add(name);
+  updateTyping();
+});
+
+socket.on('user_stop_typing', () => {
+  typingUsers.clear();
+  updateTyping();
+});
+
+// â”€â”€ Load history â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+fetch('/messages/' + roomId)
+  .then(r => r.json())
+  .then(msgs => {
+    msgs.forEach(m => renderMessage(m));
+    scrollToBottom();
+  });
+
+// â”€â”€ Render message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function renderMessage(msg) {
+  const isMe = msg.sender_name === myName;
+  const row = document.createElement('div');
+  row.className = 'msg-row ' + (isMe ? 'outgoing' : 'incoming');
+
+  const avatar = document.createElement('div');
+  avatar.className = 'bubble-avatar';
+  avatar.textContent = msg.sender_name[0]?.toUpperCase() || '?';
+
+  const content = document.createElement('div');
+  content.className = 'msg-content';
+
+  if (!isMe) {
+    const senderEl = document.createElement('div');
+    senderEl.className = 'sender-name';
+    senderEl.textContent = msg.sender_name;
+    content.appendChild(senderEl);
+  }
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+
+  if (msg.type === 'image') {
+    const img = document.createElement('img');
+    img.className = 'bubble-img';
+    img.src = msg.content;
+    img.alt = 'Shared image';
+    img.loading = 'lazy';
+    img.onclick = () => openLightbox(msg.content);
+    bubble.appendChild(img);
+  } else {
+    bubble.textContent = msg.content;
+  }
+
+  const timeEl = document.createElement('div');
+  timeEl.className = 'bubble-time';
+  timeEl.textContent = formatTime(msg.timestamp);
+
+  content.appendChild(bubble);
+  content.appendChild(timeEl);
+
+  if (!isMe) row.appendChild(avatar);
+  row.appendChild(content);
+  messagesArea.appendChild(row);
+}
+
+function addSystemMsg(text) {
+  const el = document.createElement('div');
+  el.className = 'system-msg';
+  el.textContent = text;
+  messagesArea.appendChild(el);
+  scrollToBottom();
+}
+
+function formatTime(ts) {
+  const d = new Date(ts * 1000);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+// â”€â”€ Send message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function sendMessage() {
+  const text = msgInput.value.trim();
+  if (!text) return;
+  socket.emit('send_message', { roomId, content: text, type: 'text', sender: myName });
+  msgInput.value = '';
+  msgInput.style.height = '';
+  clearTimeout(typingTimer);
+  socket.emit('stop_typing', { roomId });
+}
+
+document.getElementById('sendBtn').addEventListener('click', sendMessage);
+msgInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+// Auto-resize textarea
+msgInput.addEventListener('input', () => {
+  msgInput.style.height = 'auto';
+  msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
+
+  // Typing indicator
+  socket.emit('typing', { roomId, userName: myName });
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(() => socket.emit('stop_typing', { roomId }), 2000);
+});
+
+// â”€â”€ Image upload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+document.getElementById('attachBtn').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) return alert('Only images allowed');
+  if (file.size > 5 * 1024 * 1024) return alert('Image must be under 5MB');
+
+  const fd = new FormData();
+  fd.append('image', file);
+  try {
+    const res = await fetch('/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.url) {
+      socket.emit('send_message', { roomId, content: data.url, type: 'image', sender: myName });
+    }
+  } catch { alert('Upload failed'); }
+  e.target.value = '';
+});
+
+// â”€â”€ Typing indicator display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function updateTyping() {
+  const container = document.getElementById('typingIndicator');
+  const textEl = document.getElementById('typingText');
+  if (typingUsers.size === 0) {
+    container.classList.remove('show');
+  } else {
+    const names = [...typingUsers];
+    textEl.textContent = names.join(', ') + (names.length === 1 ? ' is typing...' : ' are typing...');
+    container.classList.add('show');
+    scrollToBottom();
+  }
+}
+
+// â”€â”€ Scroll â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function scrollToBottom() {
+  setTimeout(() => {
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+  }, 50);
+}
+
+// â”€â”€ Lightbox â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+}
+
+// â”€â”€ Mobile keyboard fix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    document.getElementById('chatPage').style.height = window.visualViewport.height + 'px';
+    scrollToBottom();
+  });
+}
+msgInput.addEventListener('focus', () => setTimeout(scrollToBottom, 300));
+
+// â”€â”€ Leave room â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function leaveRoom() {
+  sessionStorage.removeItem('chatUser');
+  window.location.href = '/';
+}
+</script>
+</body>
+</html>

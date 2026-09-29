@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="description" content="Admin Dashboard â€“ Chat app room management">
+<title>Admin Dashboard â€“ Chat</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="dashboard-page">
+  <!-- Header -->
+  <div class="dash-header">
+    <div class="dash-header-left">
+      <div class="icon">ðŸ›¡ï¸</div>
+      <div>
+        <div class="dash-title">Admin Dashboard</div>
+        <div class="dash-subtitle">Manage Chat Rooms</div>
+      </div>
+    </div>
+    <button class="btn-secondary" onclick="handleLogout()">Logout</button>
+  </div>
+
+  <div class="dash-body">
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">ðŸ </div>
+        <div class="stat-value" id="statRooms">0</div>
+        <div class="stat-label">Rooms</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">ðŸ‘¥</div>
+        <div class="stat-value" id="statOnline">0</div>
+        <div class="stat-label">Online</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">ðŸ’¬</div>
+        <div class="stat-value" id="statMsgs">0</div>
+        <div class="stat-label">Messages</div>
+      </div>
+    </div>
+
+    <!-- Rooms list -->
+    <div class="section-header">
+      <div class="section-title">Chat Rooms</div>
+    </div>
+
+    <div id="roomsList"></div>
+
+    <!-- Create button -->
+    <button class="btn-primary" style="margin-top:1rem;" onclick="openCreateModal()">+ Create New Room</button>
+  </div>
+</div>
+
+<!-- Create Room Modal -->
+<div class="modal-overlay" id="createModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Create New Room</div>
+    <div class="form-group">
+      <label class="form-label">Room Name</label>
+      <div class="input-wrapper">
+        <span class="input-icon">ðŸ </span>
+        <input id="roomNameInput" class="input-field" type="text" placeholder="e.g. Dev Team, Marketing" maxlength="50">
+      </div>
+    </div>
+    <div class="error-msg" id="createError"></div>
+    <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+      <button class="btn-secondary" style="flex:1;" onclick="closeCreateModal()">Cancel</button>
+      <button class="btn-primary" style="flex:2;" onclick="createRoom()">Create Room â†’</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+let rooms = [];
+
+// Auth check
+fetch('/admin/check').then(r=>r.json()).then(d=>{
+  if (!d.isAdmin) window.location.href = '/admin';
+  else loadRooms();
+});
+
+async function loadRooms() {
+  const res = await fetch('/admin/rooms');
+  if (!res.ok) { window.location.href = '/admin'; return; }
+  rooms = await res.json();
+  renderRooms();
+}
+
+function renderRooms() {
+  const list = document.getElementById('roomsList');
+  const totalOnline = rooms.reduce((a,r) => a + r.participantCount, 0);
+  const totalMsgs = rooms.reduce((a,r) => a + r.messageCount, 0);
+
+  document.getElementById('statRooms').textContent = rooms.length;
+  document.getElementById('statOnline').textContent = totalOnline;
+  document.getElementById('statMsgs').textContent = totalMsgs >= 1000 ? (totalMsgs/1000).toFixed(1)+'k' : totalMsgs;
+
+  if (rooms.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="emoji">ðŸ </div><p>No rooms yet. Create one to get started!</p></div>`;
+    return;
+  }
+
+  list.innerHTML = rooms.map(r => `
+    <div class="room-card">
+      <div class="room-card-avatar">${r.name[0].toUpperCase()}</div>
+      <div class="room-card-info">
+        <div class="room-card-name">${escapeHtml(r.name)}</div>
+        <div class="room-card-meta">
+          <span class="code-badge">${r.code}</span>
+          <span class="count-badge">ðŸ‘¥ ${r.participantCount} online</span>
+          <span class="count-badge">ðŸ’¬ ${r.messageCount}</span>
+        </div>
+      </div>
+      <button class="btn-danger" onclick="deleteRoom('${r.id}', '${escapeHtml(r.name)}')">ðŸ—‘ï¸</button>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openCreateModal() {
+  document.getElementById('roomNameInput').value = '';
+  document.getElementById('createError').classList.remove('show');
+  document.getElementById('createModal').classList.add('show');
+  setTimeout(() => document.getElementById('roomNameInput').focus(), 300);
+}
+function closeCreateModal() {
+  document.getElementById('createModal').classList.remove('show');
+}
+
+document.getElementById('roomNameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') createRoom();
+});
+
+async function createRoom() {
+  const name = document.getElementById('roomNameInput').value.trim();
+  const errEl = document.getElementById('createError');
+  errEl.classList.remove('show');
+  if (!name) { errEl.textContent='Room name required'; errEl.classList.add('show'); return; }
+
+  const res = await fetch('/admin/rooms', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ name })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    closeCreateModal();
+    showToast(`Room created! Code: ${data.code}`);
+    loadRooms();
+  } else {
+    errEl.textContent = data.error || 'Failed';
+    errEl.classList.add('show');
+  }
+}
+
+async function deleteRoom(id, name) {
+  if (!confirm(`Delete room "${name}"? All messages will be deleted.`)) return;
+  await fetch('/admin/rooms/'+id, { method:'DELETE' });
+  showToast('Room deleted');
+  loadRooms();
+}
+
+async function handleLogout() {
+  await fetch('/admin/logout', { method:'POST' });
+  window.location.href = '/admin';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Auto-refresh stats every 30s
+setInterval(loadRooms, 30000);
+</script>
+</body>
+</html>

@@ -1,182 +1,188 @@
-﻿import express from 'express';
-import http from 'http';
-import { Server } from 'socket.io';
-import path from 'path';
-import { fileURLToPath } from 'url';
+// ============================================================
+// RAKESH.QD.JE - Unified Server
+// / → 3D Portfolio (Vite dist)
+// /chat → WhatsApp-style Chat App (Socket.IO + SQLite)
+// ============================================================
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+require('dotenv').config();
+const express    = require('express');
+const http       = require('http');
+const { Server } = require('socket.io');
+const session    = require('express-session');
+const rateLimit  = require('express-rate-limit');
+const multer     = require('multer');
+const path       = require('path');
+const fs         = require('fs');
+const Database   = require('better-sqlite3');
+const { v4: uuidv4 } = require('uuid');
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: { origin: '*', methods: ['GET', 'POST'] }
-});
+const app        = express();
+const httpServer = http.createServer(app);
+const io         = new Server(httpServer, { cors: { origin: '*' } });
 
 const PORT = process.env.PORT || 10000;
-const ADMIN_PASSWORD = 'rakesh@45';
 
-// ─── In-Memory Chat Storage ───────────────────────────────────────────────────
-const activeRooms = new Map();
-const roomMessages = new Map();
-const roomUsers = new Map();
+// ── Database ────────────────────────────────────────────────
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-const defaultRoom = {
-    id: 'room_default',
-    name: 'Rakesh Special Friends Lounge',
-    code: '748291',
-    description: 'bate kre dill se unlimate free and privatly',
-    createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-};
-activeRooms.set(defaultRoom.code, defaultRoom);
-roomMessages.set(defaultRoom.code, [{
-    id: 'msg_welcome',
-    senderId: 'admin_rakesh',
-    senderName: 'Rakesh (Admin)',
-    avatar: '👑',
-    text: 'Swagat hai Rakesh Chat Room me! "bate kre dill se unlimate free and privatly". Shared Secret PIN: 748291',
-    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    isAdmin: true
-}]);
-roomUsers.set(defaultRoom.code, new Map());
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
-// ─── Static Files ─────────────────────────────────────────────────────────────
-// 3D Portfolio (root)
+const db = new Database(path.join(dataDir, 'chat.db'));
+db.exec(`
+  CREATE TABLE IF NOT EXISTS rooms (
+    id TEXT PRIMARY KEY,
+    code TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    created_at INTEGER DEFAULT (strftime('%s','now'))
+  );
+  CREATE TABLE IF NOT EXISTS messages (
+    id TEXT PRIMARY KEY,
+    room_id TEXT NOT NULL,
+    sender_name TEXT NOT NULL,
+    type TEXT DEFAULT 'text',
+    content TEXT NOT NULL,
+    timestamp INTEGER DEFAULT (strftime('%s','now'))
+  );
+`);
+
+// ── File Upload ─────────────────────────────────────────────
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename:    (req, file, cb) => cb(null, uuidv4() + path.extname(file.originalname))
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only images allowed'), false);
+  }
+});
+
+// ── Middleware ───────────────────────────────────────────────
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'rakesh-chat-secret-2024',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
+}));
+
+// ── Static Files ─────────────────────────────────────────────
+// 3D Portfolio at /
 app.use('/', express.static(path.join(__dirname, 'dist')));
-
 // Chat static files at /chat
 app.use('/chat', express.static(path.join(__dirname, 'chat')));
+// Uploaded images
+app.use('/uploads', express.static(uploadsDir));
 
-app.use(express.json());
+// ── Rate Limiters ────────────────────────────────────────────
+const joinLimiter  = rateLimit({ windowMs: 15 * 60 * 1000, max: 20 });
+const adminLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
 
-// ─── Routes ───────────────────────────────────────────────────────────────────
-// Chat page
-app.get('/chat', (req, res) => {
-    res.sendFile(path.join(__dirname, 'chat', 'index.html'));
+function genCode() { return String(Math.floor(1000 + Math.random() * 9000)); }
+function requireAdmin(req, res, next) {
+  if (req.session && req.session.isAdmin) return next();
+  res.status(401).json({ error: 'Unauthorized' });
+}
+
+// ── Admin API ─────────────────────────────────────────────────
+app.post('/admin/login', adminLimiter, (req, res) => {
+  if (req.body.password === (process.env.ADMIN_PASSWORD || 'rakesh@45')) {
+    req.session.isAdmin = true;
+    res.json({ ok: true });
+  } else {
+    res.status(401).json({ error: 'Invalid password' });
+  }
+});
+app.post('/admin/logout', (req, res) => { req.session.destroy(() => res.json({ ok: true })); });
+app.get('/admin/check', (req, res) => { res.json({ isAdmin: !!(req.session && req.session.isAdmin) }); });
+app.get('/admin/rooms', requireAdmin, (req, res) => {
+  const rooms = db.prepare('SELECT * FROM rooms ORDER BY created_at DESC').all();
+  res.json(rooms.map(r => {
+    const msgCount = db.prepare('SELECT COUNT(*) as c FROM messages WHERE room_id=?').get(r.id).c;
+    const sockRoom = io.sockets.adapter.rooms.get(r.id);
+    return { ...r, messageCount: msgCount, participantCount: sockRoom ? sockRoom.size : 0 };
+  }));
+});
+app.post('/admin/rooms', requireAdmin, (req, res) => {
+  const name = (req.body.name || '').trim();
+  if (!name) return res.status(400).json({ error: 'Name required' });
+  const id = uuidv4();
+  let code = genCode();
+  while (db.prepare('SELECT id FROM rooms WHERE code=?').get(code)) code = genCode();
+  db.prepare('INSERT INTO rooms (id, code, name) VALUES (?, ?, ?)').run(id, code, name);
+  res.json({ id, code, name });
+});
+app.delete('/admin/rooms/:id', requireAdmin, (req, res) => {
+  db.prepare('DELETE FROM messages WHERE room_id=?').run(req.params.id);
+  db.prepare('DELETE FROM rooms WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
 });
 
-// Chat API
-app.get('/api/rooms', (req, res) => {
-    res.json(Array.from(activeRooms.values()));
+// ── Chat API ──────────────────────────────────────────────────
+app.post('/join', joinLimiter, (req, res) => {
+  const code = (req.body.code || '').trim();
+  const name = (req.body.name || '').trim();
+  if (!code || !name) return res.status(400).json({ error: 'Code and name required' });
+  if (name.length > 30) return res.status(400).json({ error: 'Name too long' });
+  const room = db.prepare('SELECT * FROM rooms WHERE code=?').get(code);
+  if (!room) return res.status(404).json({ error: 'Invalid room code. Please check and try again.' });
+  req.session.userName = name;
+  req.session.roomId = room.id;
+  res.json({ ok: true, roomId: room.id, roomName: room.name });
+});
+app.get('/messages/:roomId', (req, res) => {
+  res.json(db.prepare('SELECT * FROM messages WHERE room_id=? ORDER BY timestamp ASC').all(req.params.roomId));
+});
+app.post('/upload', upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  res.json({ url: '/uploads/' + req.file.filename });
 });
 
-// SPA fallback for 3D site
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
+// ── Chat Pages ────────────────────────────────────────────────
+app.get('/chat',             (req, res) => res.sendFile(path.join(__dirname, 'chat', 'index.html')));
+app.get('/chat/room/:id',   (req, res) => res.sendFile(path.join(__dirname, 'chat', 'chat.html')));
+app.get('/admin',            (req, res) => res.sendFile(path.join(__dirname, 'chat', 'admin-login.html')));
+app.get('/admin/dashboard',  (req, res) => res.sendFile(path.join(__dirname, 'chat', 'admin-dashboard.html')));
 
-// ─── Socket.IO ────────────────────────────────────────────────────────────────
+// ── 3D Site SPA Fallback ──────────────────────────────────────
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'dist', 'index.html')));
+
+// ── Socket.IO ─────────────────────────────────────────────────
+const userMap = {};
 io.on('connection', (socket) => {
-    console.log(`[Socket Connected] ID: ${socket.id}`);
-    socket.emit('rooms-list-updated', Array.from(activeRooms.values()));
-
-    socket.on('join-room', ({ name, pin, avatar, isAdmin }) => {
-        const cleanPin = String(pin).trim();
-        const targetRoom = activeRooms.get(cleanPin);
-        if (!targetRoom) {
-            return socket.emit('error-toast', 'Galat Chat Room PIN! Sahi PIN Rakesh Admin se prapt karein.');
-        }
-        if (socket.currentRoom) leaveCurrentRoomSocket(socket);
-
-        socket.join(cleanPin);
-        socket.currentRoom = cleanPin;
-        socket.userData = { id: socket.id, name, avatar, isAdmin };
-
-        if (!roomUsers.has(cleanPin)) roomUsers.set(cleanPin, new Map());
-        roomUsers.get(cleanPin).set(socket.id, socket.userData);
-
-        const history = roomMessages.get(cleanPin) || [];
-        socket.emit('room-history', { room: targetRoom, messages: history });
-
-        saveAndBroadcast(cleanPin, {
-            id: 'sys_' + Date.now(), isSystem: true,
-            text: `${name} room me shamil ho gaye.`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-        broadcastMembers(cleanPin);
-    });
-
-    socket.on('send-message', ({ roomCode, text, image, senderName, avatar, isAdmin }) => {
-        const cleanPin = String(roomCode).trim();
-        if (!activeRooms.has(cleanPin)) return;
-        saveAndBroadcast(cleanPin, {
-            id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-            senderId: socket.id,
-            senderName: senderName || 'Anonymous',
-            avatar: avatar || '👤',
-            text: text || '',
-            image: image || null,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isAdmin: !!isAdmin
-        });
-    });
-
-    socket.on('typing', ({ roomCode, userName, isTyping }) => {
-        socket.to(String(roomCode).trim()).emit('user-typing', { userName, isTyping });
-    });
-
-    socket.on('admin-create-room', ({ name, code, description, password }) => {
-        if (password !== ADMIN_PASSWORD) return socket.emit('error-toast', 'Unauthorized!');
-        const cleanCode = String(code).trim();
-        if (activeRooms.has(cleanCode)) return socket.emit('error-toast', 'Is PIN se already room bana hua hai!');
-        const newRoom = {
-            id: 'room_' + Date.now(), name: name.trim(), code: cleanCode,
-            description: (description || 'bate kre dill se').trim(),
-            createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        activeRooms.set(cleanCode, newRoom);
-        roomMessages.set(cleanCode, []);
-        roomUsers.set(cleanCode, new Map());
-        io.emit('rooms-list-updated', Array.from(activeRooms.values()));
-        socket.emit('action-success', `Chatroom "${newRoom.name}" ban gaya! Secret PIN: ${cleanCode}`);
-    });
-
-    socket.on('admin-delete-room', ({ roomCode, password }) => {
-        if (password !== ADMIN_PASSWORD) return socket.emit('error-toast', 'Unauthorized!');
-        const cleanCode = String(roomCode).trim();
-        const targetRoom = activeRooms.get(cleanCode);
-        if (!targetRoom) return;
-        io.to(cleanCode).emit('room-deleted-kick', { roomCode: cleanCode, roomTitle: targetRoom.name });
-        activeRooms.delete(cleanCode); roomMessages.delete(cleanCode); roomUsers.delete(cleanCode);
-        io.emit('rooms-list-updated', Array.from(activeRooms.values()));
-        socket.emit('action-success', `Chatroom "${targetRoom.name}" delete ho gaya!`);
-    });
-
-    socket.on('disconnect', () => {
-        if (socket.currentRoom) leaveCurrentRoomSocket(socket);
-        console.log(`[Socket Disconnected] ID: ${socket.id}`);
-    });
+  socket.on('join_room', ({ roomId, userName }) => {
+    if (!db.prepare('SELECT id FROM rooms WHERE id=?').get(roomId)) return;
+    socket.join(roomId);
+    userMap[socket.id] = { name: userName, roomId };
+    socket.to(roomId).emit('user_joined', { name: userName });
+    io.to(roomId).emit('participant_count', io.sockets.adapter.rooms.get(roomId)?.size || 0);
+  });
+  socket.on('send_message', ({ roomId, content, type, sender }) => {
+    if (!db.prepare('SELECT id FROM rooms WHERE id=?').get(roomId)) return;
+    const id = uuidv4(), ts = Math.floor(Date.now() / 1000);
+    db.prepare('INSERT INTO messages (id, room_id, sender_name, type, content, timestamp) VALUES (?, ?, ?, ?, ?, ?)').run(id, roomId, sender, type || 'text', content, ts);
+    io.to(roomId).emit('receive_message', { id, room_id: roomId, sender_name: sender, type: type || 'text', content, timestamp: ts });
+  });
+  socket.on('typing',      ({ roomId, userName }) => socket.to(roomId).emit('user_typing', { name: userName }));
+  socket.on('stop_typing', ({ roomId })           => socket.to(roomId).emit('user_stop_typing'));
+  socket.on('disconnect', () => {
+    const user = userMap[socket.id];
+    if (user) {
+      delete userMap[socket.id];
+      socket.to(user.roomId).emit('user_left', { name: user.name });
+      io.to(user.roomId).emit('participant_count', io.sockets.adapter.rooms.get(user.roomId)?.size || 0);
+    }
+  });
 });
 
-function leaveCurrentRoomSocket(socket) {
-    const roomCode = socket.currentRoom;
-    if (!roomCode) return;
-    roomUsers.get(roomCode)?.delete(socket.id);
-    if (socket.userData) {
-        saveAndBroadcast(roomCode, {
-            id: 'sys_' + Date.now(), isSystem: true,
-            text: `${socket.userData.name} room se bahar chale gaye.`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-    }
-    broadcastMembers(roomCode);
-    socket.leave(roomCode);
-    socket.currentRoom = null;
-}
-
-function saveAndBroadcast(roomCode, msgObj) {
-    if (!roomMessages.has(roomCode)) roomMessages.set(roomCode, []);
-    roomMessages.get(roomCode).push(msgObj);
-    io.to(roomCode).emit('receive-message', msgObj);
-}
-
-function broadcastMembers(roomCode) {
-    const usersMap = roomUsers.get(roomCode);
-    io.to(roomCode).emit('room-members-update', usersMap ? Array.from(usersMap.values()) : []);
-}
-
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Rakesh Server running on port ${PORT}`);
-    console.log(`   🌐 3D Site: http://localhost:${PORT}/`);
-    console.log(`   💬 Chat:    http://localhost:${PORT}/chat`);
+httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`   🌐 3D Site: http://localhost:${PORT}/`);
+  console.log(`   💬 Chat:    http://localhost:${PORT}/chat`);
+  console.log(`   🔑 Admin:   http://localhost:${PORT}/admin`);
 });

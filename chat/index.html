@@ -1,300 +1,115 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rakesh Chat Room - Bate kre dill se unlimate free and privatly</title>
-    <meta name="description" content="Rakesh Chat Room - Bate kre dill se unlimate free and privatly. Real-time WebSocket Secret Chatrooms.">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/chat/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="description" content="Chat - Join a room with a 4-digit code and connect instantly.">
+<title>Chat - Connect Instantly</title>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 </head>
 <body>
+<div class="join-page">
+  <div class="join-logo">
+    <div class="join-logo-icon">&#x1F4AC;</div>
+    <h1>Chat</h1>
+    <p>Connect Instantly</p>
+  </div>
 
-    <!-- Background Decorative Elements -->
-    <div class="bg-glow bg-glow-1"></div>
-    <div class="bg-glow bg-glow-2"></div>
-    <div class="bg-grid"></div>
+  <div class="join-card glass-card">
+    <h2>Join a Room</h2>
 
-    <div class="app-container">
-        <!-- TOP APP HEADER -->
-        <header class="app-header glass-card">
-            <div class="brand">
-                <div class="logo-icon">
-                    <i class="fa-solid fa-comments"></i>
-                </div>
-                <div class="brand-text">
-                    <h1>Rakesh <span>Chat Room</span></h1>
-                    <p class="tagline">"bate kre dill se unlimate free and privatly"</p>
-                </div>
-            </div>
-
-            <div class="header-actions">
-                <button id="sound-toggle-btn" class="icon-btn" title="Toggle Sound" onclick="toggleSound()">
-                    <i class="fa-solid fa-volume-high"></i>
-                </button>
-                <div class="sync-badge" id="sync-status" title="Real-Time WebSocket Server Connected">
-                    <span class="pulse-dot"></span> Live Server
-                </div>
-            </div>
-        </header>
-
-        <!-- MAIN CONTENT AREA -->
-        <main class="main-content">
-
-            <!-- 1. UNIFIED PIN ENTRANCE SCREEN (SINGLE PANEL) -->
-            <section id="user-view" class="view-section active">
-                <div class="lobby-card glass-card">
-                    <div class="card-header">
-                        <div class="card-badge"><i class="fa-solid fa-shield-halved"></i> Realtime Entrance</div>
-                        <h2>Rakesh Chat Room</h2>
-                        <p class="quote-text">"bate kre dill se unlimate free and privatly"</p>
-                        <p class="sub-text">Room me join hone ke liye <strong>Chat Room PIN</strong> dalein.</p>
-                    </div>
-
-                    <form id="unified-entry-form" onsubmit="handleUnifiedSubmit(event)">
-                        <div class="input-group">
-                            <label for="user-name"><i class="fa-solid fa-user"></i> Aapka Naam (Display Name)</label>
-                            <input type="text" id="user-name" placeholder="e.g. Aman, Rahul, Priya..." required autocomplete="off">
-                        </div>
-
-                        <div class="input-group">
-                            <label for="pin-input"><i class="fa-solid fa-key"></i> Enter Room PIN</label>
-                            <div class="code-input-wrapper">
-                                <input type="password" id="pin-input" placeholder="Enter Secret Room PIN..." required autocomplete="off">
-                                <button type="button" class="eye-btn" onclick="togglePinVisibility(this)">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                                <button type="button" class="paste-btn" title="Paste PIN" onclick="pastePinCode()" style="right: 42px;">
-                                    <i class="fa-regular fa-clipboard"></i>
-                                </button>
-                            </div>
-                            <span class="help-text"><i class="fa-solid fa-circle-info"></i> Secret Room PIN apne Admin (Rakesh) se lein.</span>
-                        </div>
-
-                        <!-- Avatar Selector -->
-                        <div class="avatar-selector-section">
-                            <label><i class="fa-solid fa-face-smile"></i> Apna Avatar Chunein</label>
-                            <div class="avatar-options" id="avatar-picker">
-                                <!-- Populated dynamically by JS -->
-                            </div>
-                        </div>
-
-                        <button type="submit" class="primary-btn btn-glow w-100 mobile-btn">
-                            <i class="fa-solid fa-right-to-bracket"></i> Enter Chat Room
-                        </button>
-                    </form>
-                </div>
-            </section>
-
-            <!-- 2. RAKESH ADMIN DASHBOARD -->
-            <section id="admin-view" class="view-section">
-                <div id="admin-dashboard" class="admin-dashboard">
-                    <!-- Admin Header Bar -->
-                    <div class="admin-top-bar glass-card">
-                        <div class="admin-profile">
-                            <div class="admin-avatar"><i class="fa-solid fa-crown"></i></div>
-                            <div>
-                                <h3>Rakesh Admin Panel</h3>
-                                <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Authenticated</span>
-                            </div>
-                        </div>
-
-                        <div class="admin-stats">
-                            <div class="stat-box">
-                                <span class="stat-value" id="stat-total-rooms">0</span>
-                                <span class="stat-label">Active Rooms</span>
-                            </div>
-                            <div class="stat-box">
-                                <span class="stat-value" id="stat-total-msgs">0</span>
-                                <span class="stat-label">Total Messages</span>
-                            </div>
-                        </div>
-
-                        <button class="danger-btn outline-btn" onclick="handleAdminLogout()">
-                            <i class="fa-solid fa-right-from-bracket"></i> Exit Admin
-                        </button>
-                    </div>
-
-                    <!-- Create Room Form -->
-                    <div class="create-room-card glass-card">
-                        <div class="card-header-flex">
-                            <div>
-                                <h3><i class="fa-solid fa-plus-circle"></i> Naya Chat Room Banayein</h3>
-                                <p>Room banayein aur Secret PIN dosto ko share karein. Real-time me kisi bhi device se connect honge.</p>
-                            </div>
-                        </div>
-
-                        <form id="create-room-form" onsubmit="handleCreateRoom(event)">
-                            <div class="form-row">
-                                <div class="input-group flex-2">
-                                    <label for="new-room-name"><i class="fa-solid fa-tag"></i> Chat Room Title / Name</label>
-                                    <input type="text" id="new-room-name" placeholder="e.g. Friends Adda, Private Lounge..." required autocomplete="off">
-                                </div>
-                                <div class="input-group flex-1">
-                                    <label for="custom-room-code"><i class="fa-solid fa-hashtag"></i> Secret PIN (Auto/Custom)</label>
-                                    <div class="code-gen-wrapper">
-                                        <input type="text" id="custom-room-code" placeholder="Auto 6-digit PIN" maxlength="10">
-                                        <button type="button" class="icon-btn" title="Randomize PIN" onclick="generateRandomCode()">
-                                            <i class="fa-solid fa-dice"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-row align-end">
-                                <div class="input-group flex-2">
-                                    <label for="new-room-desc"><i class="fa-solid fa-align-left"></i> Description (Optional)</label>
-                                    <input type="text" id="new-room-desc" placeholder="e.g. bate kre dill se unlimate free and privatly" autocomplete="off">
-                                </div>
-                                <button type="submit" class="primary-btn btn-glow flex-1 mobile-btn">
-                                    <i class="fa-solid fa-folder-plus"></i> Create Chat Room
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Active Rooms Management List -->
-                    <div class="rooms-list-card glass-card">
-                        <div class="card-header-flex">
-                            <h3><i class="fa-solid fa-list-check"></i> Active Server Rooms (<span id="rooms-count">0</span>)</h3>
-                            <button class="secondary-btn btn-sm" onclick="requestRoomsUpdate()">
-                                <i class="fa-solid fa-rotate-right"></i> Refresh
-                            </button>
-                        </div>
-
-                        <div id="admin-rooms-container" class="rooms-grid">
-                            <!-- Dynamic list -->
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 3. LIVE MOBILE-FRIENDLY CHAT ROOM -->
-            <section id="chat-view" class="view-section">
-                <div class="chat-wrapper glass-card">
-                    <!-- Chat Header -->
-                    <div class="chat-header">
-                        <div class="chat-room-info">
-                            <button class="back-btn" title="Exit Room" onclick="confirmLeaveRoom()">
-                                <i class="fa-solid fa-arrow-left"></i>
-                            </button>
-                            <div class="room-icon" id="chat-room-avatar">
-                                <i class="fa-solid fa-comments"></i>
-                            </div>
-                            <div>
-                                <div class="room-title-flex">
-                                    <h2 id="chat-room-name">Rakesh Chat Room</h2>
-                                    <span id="admin-room-badge" class="badge badge-gold hidden"><i class="fa-solid fa-crown"></i> Admin</span>
-                                </div>
-                                <div class="room-code-badge" title="Click to Copy Room PIN" onclick="copyCurrentRoomCode()">
-                                    <i class="fa-solid fa-key"></i> PIN: <strong id="chat-room-code">000000</strong>
-                                    <i class="fa-regular fa-copy copy-icon"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="chat-header-actions">
-                            <button class="online-users-btn" onclick="toggleParticipantsModal()">
-                                <i class="fa-solid fa-users"></i>
-                                <span class="badge badge-pill" id="members-count">1</span>
-                            </button>
-                            <button class="danger-btn btn-sm" title="Exit Room" onclick="confirmLeaveRoom()">
-                                <i class="fa-solid fa-door-open"></i> Exit
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Chat Messages Stream -->
-                    <div class="chat-messages-container" id="chat-messages">
-                        <!-- Messages rendered dynamically -->
-                    </div>
-
-                    <!-- Typing Indicator -->
-                    <div id="typing-indicator" class="typing-bar hidden">
-                        <span class="dots"><span>.</span><span>.</span><span>.</span></span>
-                        <span id="typing-text">Someone is typing...</span>
-                    </div>
-
-                    <!-- Image Preview -->
-                    <div id="image-preview-container" class="preview-bar hidden">
-                        <div class="preview-img-wrapper">
-                            <img id="preview-img-src" src="" alt="Preview">
-                            <button class="remove-preview-btn" onclick="cancelImageUpload()">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
-                        <span>Photo attached</span>
-                    </div>
-
-                    <!-- Chat Input Controls -->
-                    <div class="chat-input-bar">
-                        <input type="file" id="image-file-input" accept="image/*" class="hidden" onchange="handleImageSelected(event)">
-
-                        <button class="input-action-btn" title="Attach Photo" onclick="document.getElementById('image-file-input').click()">
-                            <i class="fa-solid fa-paperclip"></i>
-                        </button>
-
-                        <button class="input-action-btn" title="Emoji Reactions" onclick="toggleEmojiPicker()">
-                            <i class="fa-regular fa-face-smile"></i>
-                        </button>
-
-                        <!-- Emoji Popover -->
-                        <div id="emoji-picker" class="emoji-picker-popover hidden">
-                            <div class="emoji-grid">
-                                <span onclick="insertEmoji('ðŸ˜€')">ðŸ˜€</span>
-                                <span onclick="insertEmoji('ðŸ˜‚')">ðŸ˜‚</span>
-                                <span onclick="insertEmoji('ðŸ˜')">ðŸ˜</span>
-                                <span onclick="insertEmoji('ðŸ”¥')">ðŸ”¥</span>
-                                <span onclick="insertEmoji('ðŸ‘')">ðŸ‘</span>
-                                <span onclick="insertEmoji('â¤ï¸')">â¤ï¸</span>
-                                <span onclick="insertEmoji('ðŸŽ‰')">ðŸŽ‰</span>
-                                <span onclick="insertEmoji('ðŸš€')">ðŸš€</span>
-                                <span onclick="insertEmoji('ðŸ˜Ž')">ðŸ˜Ž</span>
-                                <span onclick="insertEmoji('ðŸ™Œ')">ðŸ™Œ</span>
-                                <span onclick="insertEmoji('ðŸ’¯')">ðŸ’¯</span>
-                                <span onclick="insertEmoji('âœ¨')">âœ¨</span>
-                            </div>
-                        </div>
-
-                        <form id="send-message-form" onsubmit="handleSendMessage(event)" class="message-form">
-                            <input type="text" id="message-text-input" placeholder="Type a message... (bate kre dill se)" autocomplete="off" oninput="handleTypingEvent()">
-                            <button type="submit" class="send-btn btn-glow">
-                                <i class="fa-solid fa-paper-plane"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </section>
-
-        </main>
+    <div class="form-group">
+      <label class="form-label">4-Digit Room Code</label>
+      <div class="input-wrapper">
+        <span class="input-icon">&#x1F511;</span>
+        <input id="codeInput" class="input-field code-single" type="text"
+               inputmode="numeric" maxlength="4"
+               placeholder="Enter 4-digit code" autocomplete="off">
+      </div>
     </div>
 
-    <!-- PARTICIPANTS MODAL -->
-    <div id="participants-modal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event, 'participants-modal')">
-        <div class="modal-card glass-card">
-            <div class="modal-header">
-                <h3><i class="fa-solid fa-users"></i> Online Members</h3>
-                <button class="close-modal-btn" onclick="closeModal('participants-modal')"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body">
-                <ul id="participants-list" class="participants-list">
-                    <!-- Dynamic member items -->
-                </ul>
-            </div>
-        </div>
+    <div class="form-group">
+      <label class="form-label">Your Display Name</label>
+      <div class="input-wrapper">
+        <span class="input-icon">&#x1F464;</span>
+        <input id="nameInput" class="input-field" type="text"
+               placeholder="Enter your name" maxlength="30" autocomplete="off">
+      </div>
     </div>
 
-    <!-- TOAST CONTAINER -->
-    <div id="toast-container" class="toast-container"></div>
+    <div class="error-msg" id="errorMsg"></div>
 
-    <!-- Socket.IO Backend Client Script -->
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/chat/app.js"></script>
+    <button class="btn-primary" id="joinBtn" onclick="handleJoin()">
+      Join Room &rarr;
+    </button>
+
+    <div class="security-badge">
+      &#x1F512; 256-bit secure room connection
+    </div>
+  </div>
+
+  <div class="join-footer">
+    Create a room? <a href="/admin">Contact admin</a>
+  </div>
+</div>
+
+<script>
+var codeInput = document.getElementById('codeInput');
+
+codeInput.addEventListener('input', function(e) {
+  e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+});
+
+codeInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') handleJoin();
+});
+
+document.getElementById('nameInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') handleJoin();
+});
+
+async function handleJoin() {
+  var code = codeInput.value.trim();
+  var name = document.getElementById('nameInput').value.trim();
+  var errEl = document.getElementById('errorMsg');
+  var btn = document.getElementById('joinBtn');
+
+  errEl.classList.remove('show');
+
+  if (code.length !== 4) { showError('Please enter the complete 4-digit code'); return; }
+  if (!name) { showError('Please enter your display name'); return; }
+
+  btn.textContent = 'Joining...';
+  btn.disabled = true;
+
+  try {
+    var res = await fetch('/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: code, name: name })
+    });
+    var data = await res.json();
+    if (res.ok) {
+      sessionStorage.setItem('chatUser', JSON.stringify({ name: name, roomId: data.roomId, roomName: data.roomName }));
+      window.location.href = '/chat/' + data.roomId;
+    } else {
+      showError(data.error || 'Something went wrong');
+      btn.textContent = 'Join Room';
+      btn.disabled = false;
+    }
+  } catch (err) {
+    showError('Network error. Please try again.');
+    btn.textContent = 'Join Room';
+    btn.disabled = false;
+  }
+}
+
+function showError(msg) {
+  var el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+</script>
 </body>
 </html>
-

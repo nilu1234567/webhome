@@ -2,7 +2,6 @@
   "name": "kamehouseportfolio",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -15,13 +14,19 @@
     "@react-three/drei": "^9.105.1",
     "@react-three/fiber": "^8.16.1",
     "@vercel/analytics": "^1.4.1",
+    "better-sqlite3": "^9.4.3",
+    "dotenv": "^16.3.1",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.1.5",
+    "express-session": "^1.17.3",
     "gsap": "^3.12.5",
     "leva": "^0.9.35",
+    "multer": "^1.4.5-lts.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "socket.io": "^4.7.5",
-    "three": "^0.163.0"
+    "three": "^0.163.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.55",
