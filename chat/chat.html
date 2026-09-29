@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<meta name="description" content="Chat room – real-time messaging">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
+<meta name="description" content="Chat room - real-time messaging">
 <title>Chat Room</title>
 <link rel="stylesheet" href="/chat/css/style.css">
 </head>
@@ -14,10 +14,19 @@
     <div class="room-avatar" id="roomAvatar">C</div>
     <div class="room-info">
       <div class="room-name" id="roomName">Loading...</div>
-      <div class="room-status" id="roomStatus">connecting...</div>
+      <div class="room-status" id="roomStatus">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">connecting...</span>
+      </div>
     </div>
     <div class="header-actions">
-      <button class="icon-btn" title="Leave room" onclick="leaveRoom()">🚪</button>
+      <button class="icon-btn" title="Leave room" onclick="leaveRoom()" aria-label="Leave room">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
     </div>
   </div>
 
@@ -36,22 +45,35 @@
 
   <!-- Input Bar -->
   <div class="input-bar">
-    <button class="attach-btn" id="attachBtn" title="Attach image">📎</button>
+    <button class="attach-btn" id="attachBtn" type="button" title="Attach image" aria-label="Attach image">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+      </svg>
+    </button>
     <input type="file" id="fileInput" accept="image/*" style="display:none">
-    <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1"></textarea>
-    <button class="send-btn" id="sendBtn">➤</button>
+    <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" enterkeyhint="send" autocomplete="off" autocorrect="on"></textarea>
+    <button class="send-btn" id="sendBtn" type="button" aria-label="Send message">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+      </svg>
+    </button>
   </div>
 </div>
 
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <div class="lightbox-close">✕</div>
+  <div class="lightbox-close" aria-label="Close">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </div>
   <img id="lightboxImg" src="" alt="Full size image">
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-// ── Init ───────────────────────────────────────────────
+// Init & Session
 const userInfo = JSON.parse(sessionStorage.getItem('chatUser') || '{}');
 const roomId = window.location.pathname.split('/').pop();
 
@@ -64,26 +86,33 @@ const roomName = userInfo.roomName || 'Chat Room';
 
 document.getElementById('roomName').textContent = roomName;
 document.getElementById('roomAvatar').textContent = roomName[0]?.toUpperCase() || 'C';
-document.title = roomName + ' – Chat';
+document.title = roomName + ' - Chat';
 
 const socket = io();
 const messagesArea = document.getElementById('messagesArea');
 const msgInput = document.getElementById('msgInput');
+const sendBtn = document.getElementById('sendBtn');
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
 let typingTimer;
 let typingUsers = new Set();
+let lastSendTime = 0;
 
-// ── Socket events ──────────────────────────────────────
+// Socket events
 socket.on('connect', () => {
-  document.getElementById('roomStatus').textContent = '● online';
+  statusDot.className = 'status-dot';
+  statusText.textContent = 'online';
   socket.emit('join_room', { roomId, userName: myName });
 });
 
 socket.on('disconnect', () => {
-  document.getElementById('roomStatus').textContent = '● offline';
+  statusDot.className = 'status-dot offline';
+  statusText.textContent = 'offline';
 });
 
 socket.on('participant_count', (count) => {
-  document.getElementById('roomStatus').textContent = `● ${count} online`;
+  statusDot.className = 'status-dot';
+  statusText.textContent = `${count} online`;
 });
 
 socket.on('user_joined', ({ name }) => {
@@ -98,7 +127,7 @@ socket.on('user_left', ({ name }) => {
 
 socket.on('receive_message', (msg) => {
   renderMessage(msg);
-  scrollToBottom();
+  scrollToBottom(true);
 });
 
 socket.on('user_typing', ({ name }) => {
@@ -112,15 +141,15 @@ socket.on('user_stop_typing', () => {
   updateTyping();
 });
 
-// ── Load history ──────────────────────────────────────
+// Load history
 fetch('/messages/' + roomId)
   .then(r => r.json())
   .then(msgs => {
     msgs.forEach(m => renderMessage(m));
-    scrollToBottom();
+    scrollToBottom(false);
   });
 
-// ── Render message ────────────────────────────────────
+// Render message
 function renderMessage(msg) {
   const isMe = msg.sender_name === myName;
   const row = document.createElement('div');
@@ -172,7 +201,7 @@ function addSystemMsg(text) {
   el.className = 'system-msg';
   el.textContent = text;
   messagesArea.appendChild(el);
-  scrollToBottom();
+  scrollToBottom(true);
 }
 
 function formatTime(ts) {
@@ -180,7 +209,7 @@ function formatTime(ts) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// ── Send message ───────────────────────────────────────
+// Send message
 function sendMessage() {
   const text = msgInput.value.trim();
   if (!text) return;
@@ -191,9 +220,50 @@ function sendMessage() {
   socket.emit('stop_typing', { roomId });
 }
 
-document.getElementById('sendBtn').addEventListener('click', sendMessage);
+// WhatsApp-like send handler (keeps mobile keyboard open)
+function handleSend(e) {
+  if (e) {
+    e.preventDefault();
+  }
+  const now = Date.now();
+  if (now - lastSendTime < 250) {
+    msgInput.focus();
+    return;
+  }
+  lastSendTime = now;
+
+  sendMessage();
+
+  // Keep input focused so mobile keyboard never collapses
+  msgInput.focus();
+}
+
+// Prevent button from stealing focus from msgInput on mobile & desktop
+sendBtn.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  handleSend(e);
+});
+
+sendBtn.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  handleSend(e);
+}, { passive: false });
+
+sendBtn.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+});
+
+sendBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  handleSend(e);
+});
+
+// Enter key sends without closing keypad
 msgInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    handleSend(e);
+  }
 });
 
 // Auto-resize textarea
@@ -201,13 +271,19 @@ msgInput.addEventListener('input', () => {
   msgInput.style.height = 'auto';
   msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
 
-  // Typing indicator
   socket.emit('typing', { roomId, userName: myName });
   clearTimeout(typingTimer);
   typingTimer = setTimeout(() => socket.emit('stop_typing', { roomId }), 2000);
 });
 
-// ── Image upload ───────────────────────────────────────
+// Dismiss keyboard only when user taps message history (like WhatsApp)
+messagesArea.addEventListener('pointerdown', (e) => {
+  if (e.target.tagName !== 'IMG' && document.activeElement === msgInput) {
+    msgInput.blur();
+  }
+});
+
+// Image upload
 document.getElementById('attachBtn').addEventListener('click', () => {
   document.getElementById('fileInput').click();
 });
@@ -230,7 +306,7 @@ document.getElementById('fileInput').addEventListener('change', async (e) => {
   e.target.value = '';
 });
 
-// ── Typing indicator display ────────────────────────────
+// Typing indicator display
 function updateTyping() {
   const container = document.getElementById('typingIndicator');
   const textEl = document.getElementById('typingText');
@@ -240,18 +316,21 @@ function updateTyping() {
     const names = [...typingUsers];
     textEl.textContent = names.join(', ') + (names.length === 1 ? ' is typing...' : ' are typing...');
     container.classList.add('show');
-    scrollToBottom();
+    scrollToBottom(true);
   }
 }
 
-// ── Scroll ─────────────────────────────────────────────
-function scrollToBottom() {
+// Scroll
+function scrollToBottom(smooth = false) {
   setTimeout(() => {
-    messagesArea.scrollTop = messagesArea.scrollHeight;
+    messagesArea.scrollTo({
+      top: messagesArea.scrollHeight,
+      behavior: smooth ? 'smooth' : 'auto'
+    });
   }, 50);
 }
 
-// ── Lightbox ───────────────────────────────────────────
+// Lightbox
 function openLightbox(src) {
   document.getElementById('lightboxImg').src = src;
   document.getElementById('lightbox').classList.add('show');
@@ -260,16 +339,26 @@ function closeLightbox() {
   document.getElementById('lightbox').classList.remove('show');
 }
 
-// ── Mobile keyboard fix ────────────────────────────────
+// Mobile keyboard & viewport handling
 if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', () => {
-    document.getElementById('chatPage').style.height = window.visualViewport.height + 'px';
-    scrollToBottom();
-  });
+  const syncViewport = () => {
+    const vp = window.visualViewport;
+    const chatPage = document.getElementById('chatPage');
+    if (chatPage) {
+      chatPage.style.height = `${vp.height}px`;
+      chatPage.style.top = `${vp.offsetTop || 0}px`;
+    }
+    scrollToBottom(false);
+  };
+  window.visualViewport.addEventListener('resize', syncViewport);
+  window.visualViewport.addEventListener('scroll', syncViewport);
 }
-msgInput.addEventListener('focus', () => setTimeout(scrollToBottom, 300));
 
-// ── Leave room ─────────────────────────────────────────
+msgInput.addEventListener('focus', () => {
+  setTimeout(() => scrollToBottom(false), 250);
+});
+
+// Leave room
 function leaveRoom() {
   sessionStorage.removeItem('chatUser');
   window.location.href = '/chat';
