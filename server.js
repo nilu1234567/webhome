@@ -43,9 +43,13 @@ db.exec(`
     sender_name TEXT NOT NULL,
     type TEXT DEFAULT 'text',
     content TEXT NOT NULL,
+    reply_to TEXT,
     timestamp INTEGER DEFAULT (strftime('%s','now'))
   );
 `);
+try {
+  db.exec("ALTER TABLE messages ADD COLUMN reply_to TEXT;");
+} catch (e) {}
 
 // ── File Upload ─────────────────────────────────────────────
 const storage = multer.diskStorage({
@@ -70,6 +74,16 @@ app.use(session({
   saveUninitialized: false,
   cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
 }));
+
+// ── Service Worker for Background Push Notifications ─────────
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.sendFile(path.join(__dirname, 'chat', 'sw.js'));
+});
+app.get('/chat/sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.sendFile(path.join(__dirname, 'chat', 'sw.js'));
+});
 
 // ── Static Files ─────────────────────────────────────────────
 // 3D Portfolio at /
@@ -136,7 +150,15 @@ app.post('/join', joinLimiter, (req, res) => {
   res.json({ ok: true, roomId: room.id, roomName: room.name });
 });
 app.get('/messages/:roomId', (req, res) => {
-  res.json(db.prepare('SELECT * FROM messages WHERE room_id=? ORDER BY timestamp ASC').all(req.params.roomId));
+  const rows = db.prepare('SELECT * FROM messages WHERE room_id=? ORDER BY timestamp ASC').all(req.params.roomId);
+  const formatted = rows.map(m => {
+    let replyObj = null;
+    if (m.reply_to) {
+      try { replyObj = JSON.parse(m.reply_to); } catch(e) { replyObj = null; }
+    }
+    return { ...m, reply_to: replyObj };
+  });
+  res.json(formatted);
 });
 app.post('/upload', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
@@ -180,11 +202,32 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('user_joined', { name: userName });
     io.to(roomId).emit('participant_count', io.sockets.adapter.rooms.get(roomId)?.size || 0);
   });
-  socket.on('send_message', ({ roomId, content, type, sender }) => {
+  socket.on('send_message', ({ roomId, content, type, sender, replyTo }) => {
     if (!db.prepare('SELECT id FROM rooms WHERE id=?').get(roomId)) return;
     const id = uuidv4(), ts = Math.floor(Date.now() / 1000);
-    db.prepare('INSERT INTO messages (id, room_id, sender_name, type, content, timestamp) VALUES (?, ?, ?, ?, ?, ?)').run(id, roomId, sender, type || 'text', content, ts);
-    io.to(roomId).emit('receive_message', { id, room_id: roomId, sender_name: sender, type: type || 'text', content, timestamp: ts });
+    let replyToStr = null;
+    if (replyTo) {
+      try {
+        replyToStr = typeof replyTo === 'string' ? replyTo : JSON.stringify(replyTo);
+      } catch (e) {
+        replyToStr = null;
+      }
+    }
+    db.prepare('INSERT INTO messages (id, room_id, sender_name, type, content, reply_to, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)').run(id, roomId, sender, type || 'text', content, replyToStr, ts);
+    
+    let replyObj = null;
+    if (replyToStr) {
+      try { replyObj = JSON.parse(replyToStr); } catch(e) { replyObj = null; }
+    }
+    io.to(roomId).emit('receive_message', {
+      id,
+      room_id: roomId,
+      sender_name: sender,
+      type: type || 'text',
+      content,
+      reply_to: replyObj,
+      timestamp: ts
+    });
   });
   socket.on('typing',      ({ roomId, userName }) => socket.to(roomId).emit('user_typing', { name: userName }));
   socket.on('stop_typing', ({ roomId })           => socket.to(roomId).emit('user_stop_typing'));

@@ -321,6 +321,24 @@
 </div>
 
 <script>
+// Check 24-hour persistent session on page load
+(function checkExistingSession() {
+  try {
+    var raw = localStorage.getItem('rakesh_chat_session');
+    if (raw) {
+      var sess = JSON.parse(raw);
+      if (sess && sess.roomId && sess.name && sess.expiresAt && Date.now() < sess.expiresAt) {
+        // Still valid within 24 hours, redirect straight to chat!
+        sessionStorage.setItem('chatUser', JSON.stringify(sess));
+        window.location.replace('/chat/' + sess.roomId);
+        return;
+      } else if (sess && sess.expiresAt && Date.now() >= sess.expiresAt) {
+        localStorage.removeItem('rakesh_chat_session');
+      }
+    }
+  } catch(e) {}
+})();
+
 var codeInput = document.getElementById('codeInput');
 
 codeInput.addEventListener('input', function(e) {
@@ -357,7 +375,17 @@ async function handleJoin() {
     });
     var data = await res.json();
     if (res.ok) {
-      sessionStorage.setItem('chatUser', JSON.stringify({ name: name, roomId: data.roomId, roomName: data.roomName }));
+      // 24-hour persistent session
+      var sessionData = {
+        name: name,
+        roomId: data.roomId,
+        roomName: data.roomName,
+        code: code,
+        loginAt: Date.now(),
+        expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+      };
+      localStorage.setItem('rakesh_chat_session', JSON.stringify(sessionData));
+      sessionStorage.setItem('chatUser', JSON.stringify(sessionData));
       window.location.href = '/chat/' + data.roomId;
     } else {
       showError(data.error || 'Invalid Room Code or room expired');

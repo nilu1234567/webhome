@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover">
 <meta name="description" content="Chat room - real-time messaging">
-<title>Chat Room</title>
+<title>Chat Room - RAKESH Chat Service</title>
 <link rel="stylesheet" href="/chat/css/style.css">
 </head>
 <body>
@@ -29,6 +29,15 @@
       </div>
     </div>
     <div class="header-actions">
+      <!-- Notification alert toggle -->
+      <button class="notif-btn" id="notifBtn" type="button" onclick="requestNotificationAccess()" title="Browser Notifications">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span id="notifBtnLabel">Alerts</span>
+      </button>
+
       <a href="https://rakesh.qd.je" target="_blank" class="corp-nav-link" style="padding:0.35rem 0.75rem; font-size:0.75rem; text-decoration:none;" title="Parent Company Website">
         rakesh.qd.je &nearr;
       </a>
@@ -55,6 +64,29 @@
     </div>
   </div>
 
+  <!-- WhatsApp-style Reply Preview Bar -->
+  <div class="reply-preview-bar" id="replyPreviewBar" style="display:none;">
+    <div class="reply-preview-main">
+      <div class="reply-preview-left-bar"></div>
+      <div class="reply-preview-content">
+        <div class="reply-preview-sender" id="replySenderText">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 17 4 12 9 7"></polyline>
+            <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+          </svg>
+          <span id="replySenderName">User</span>
+        </div>
+        <div class="reply-preview-text" id="replyBodyText">Message snippet...</div>
+      </div>
+    </div>
+    <button class="reply-close-btn" type="button" onclick="cancelReply()" aria-label="Cancel reply">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
   <!-- Input Bar -->
   <div class="input-bar">
     <button class="attach-btn" id="attachBtn" type="button" title="Attach image" aria-label="Attach image">
@@ -63,8 +95,17 @@
       </svg>
     </button>
     <input type="file" id="fileInput" accept="image/*" style="display:none">
-    <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" enterkeyhint="send" autocomplete="off" autocorrect="on"></textarea>
-    <button class="send-btn" id="sendBtn" type="button" aria-label="Send message">
+
+    <div class="input-wrap">
+      <textarea
+        id="msgInput"
+        placeholder="Type a message..."
+        rows="1"
+        aria-label="Type a message"
+      ></textarea>
+    </div>
+
+    <button class="send-btn" id="sendBtn" type="button" title="Send message" aria-label="Send message">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
       </svg>
@@ -85,12 +126,26 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-// Init & Session
-const userInfo = JSON.parse(sessionStorage.getItem('chatUser') || '{}');
+// ── 1. Init & 24-Hour Persistent Session ─────────────────────────────
+let userInfo = JSON.parse(sessionStorage.getItem('chatUser') || '{}');
 const roomId = window.location.pathname.split('/').pop();
 
+// Check localStorage for 24-hour persistence if sessionStorage is empty
 if (!userInfo.name || !userInfo.roomId || userInfo.roomId !== roomId) {
-  window.location.href = '/chat';
+  try {
+    const rawLocal = localStorage.getItem('rakesh_chat_session');
+    if (rawLocal) {
+      const localSess = JSON.parse(rawLocal);
+      if (localSess && localSess.roomId === roomId && localSess.name && localSess.expiresAt && Date.now() < localSess.expiresAt) {
+        userInfo = localSess;
+        sessionStorage.setItem('chatUser', JSON.stringify(userInfo));
+      }
+    }
+  } catch(e) {}
+}
+
+if (!userInfo.name || !userInfo.roomId || userInfo.roomId !== roomId) {
+  window.location.replace('/chat');
 }
 
 const myName = userInfo.name;
@@ -100,6 +155,165 @@ document.getElementById('roomName').textContent = roomName;
 document.getElementById('roomAvatar').textContent = roomName[0]?.toUpperCase() || 'C';
 document.title = roomName + ' - RAKESH Chat Service';
 
+// ── 2. Background & Lock-Screen Notifications (Service Worker) ───────
+let swRegistration = null;
+let unreadCount = 0;
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then((reg) => {
+    swRegistration = reg;
+  }).catch((err) => {
+    console.warn('ServiceWorker registration error:', err);
+  });
+}
+
+function updateNotifBtn() {
+  const btn = document.getElementById('notifBtn');
+  const label = document.getElementById('notifBtnLabel');
+  if (!('Notification' in window)) {
+    btn.style.display = 'none';
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    btn.classList.add('active');
+    label.textContent = 'Alerts On';
+    btn.title = 'Browser notifications are active';
+  } else {
+    btn.classList.remove('active');
+    label.textContent = 'Enable Alerts';
+    btn.title = 'Click to enable mobile lock-screen & background alerts';
+  }
+}
+updateNotifBtn();
+
+async function requestNotificationAccess() {
+  if (!('Notification' in window)) {
+    alert('This browser does not support web notifications.');
+    return;
+  }
+  try {
+    const permission = await Notification.requestPermission();
+    updateNotifBtn();
+    if (permission === 'granted') {
+      triggerNotificationSound();
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+      showSystemNotification('RAKESH Chat', 'Notifications activated! You will receive WhatsApp-style alerts when phone is locked or in background.');
+    }
+  } catch(e) {
+    console.error('Notification permission error:', e);
+  }
+}
+
+// Synthesize pleasant WhatsApp-like notification sound via Web Audio API
+function triggerNotificationSound() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(800, ctx.currentTime);
+    osc1.frequency.exponentialRampToValueAtTime(1250, ctx.currentTime + 0.08);
+
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(1250, ctx.currentTime + 0.09);
+    osc2.frequency.exponentialRampToValueAtTime(1650, ctx.currentTime + 0.18);
+
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start(ctx.currentTime);
+    osc1.stop(ctx.currentTime + 0.08);
+    osc2.start(ctx.currentTime + 0.09);
+    osc2.stop(ctx.currentTime + 0.22);
+  } catch(e) {}
+}
+
+function showSystemNotification(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+  if (swRegistration && swRegistration.showNotification) {
+    swRegistration.showNotification(title, {
+      body: body,
+      icon: '/logos/logoFileShare.png',
+      badge: '/logos/logoFileShare.png',
+      vibrate: [200, 100, 200],
+      tag: 'rakesh-chat-room',
+      renotify: true,
+      data: { url: '/chat/' + roomId }
+    });
+  } else {
+    try {
+      new Notification(title, {
+        body: body,
+        icon: '/logos/logoFileShare.png',
+        tag: 'rakesh-chat-room'
+      });
+    } catch(e) {}
+  }
+}
+
+// Reset unread count when user views tab
+window.addEventListener('focus', () => {
+  unreadCount = 0;
+  document.title = roomName + ' - RAKESH Chat Service';
+});
+
+// ── 3. WhatsApp-Style Reply State ────────────────────────────────────
+let currentReply = null; // { id, sender, text, type }
+
+function startReply(msg) {
+  currentReply = {
+    id: msg.id,
+    sender: msg.sender_name,
+    text: msg.type === 'image' ? '📷 Photo' : msg.content,
+    type: msg.type || 'text'
+  };
+
+  document.getElementById('replySenderName').textContent = currentReply.sender;
+  document.getElementById('replyBodyText').textContent = currentReply.text;
+  document.getElementById('replyPreviewBar').style.display = 'flex';
+
+  if (navigator.vibrate) navigator.vibrate(40);
+  msgInput.focus();
+}
+
+function cancelReply() {
+  currentReply = null;
+  document.getElementById('replyPreviewBar').style.display = 'none';
+}
+
+function scrollToMessage(msgId) {
+  if (!msgId) return;
+  const targetRow = document.getElementById('msg-' + msgId);
+  if (targetRow) {
+    targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const bubble = targetRow.querySelector('.bubble');
+    if (bubble) {
+      bubble.classList.remove('highlight-flash');
+      void bubble.offsetWidth; // force reflow
+      bubble.classList.add('highlight-flash');
+      setTimeout(() => bubble.classList.remove('highlight-flash'), 1300);
+    }
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+// ── 4. Socket Events & Messages ──────────────────────────────────────
 const socket = io();
 const messagesArea = document.getElementById('messagesArea');
 const msgInput = document.getElementById('msgInput');
@@ -110,7 +324,6 @@ let typingTimer;
 let typingUsers = new Set();
 let lastSendTime = 0;
 
-// Socket events
 socket.on('connect', () => {
   statusDot.className = 'status-dot';
   statusText.textContent = 'online';
@@ -124,15 +337,15 @@ socket.on('disconnect', () => {
 
 socket.on('participant_count', (count) => {
   statusDot.className = 'status-dot';
-  statusText.textContent = `${count} online`;
+  statusText.textContent = count + ' online';
 });
 
 socket.on('user_joined', ({ name }) => {
-  addSystemMsg(`${name} joined the room`);
+  addSystemMsg(name + ' joined the room');
 });
 
 socket.on('user_left', ({ name }) => {
-  addSystemMsg(`${name} left the room`);
+  addSystemMsg(name + ' left the room');
   typingUsers.delete(name);
   updateTyping();
 });
@@ -140,6 +353,19 @@ socket.on('user_left', ({ name }) => {
 socket.on('receive_message', (msg) => {
   renderMessage(msg);
   scrollToBottom(true);
+
+  // If message from someone else
+  if (msg.sender_name !== myName) {
+    triggerNotificationSound();
+
+    // If tab in background or mobile locked
+    if (document.hidden || !document.hasFocus()) {
+      unreadCount++;
+      document.title = '(' + unreadCount + ') ' + roomName + ' - RAKESH Chat';
+      const bodySnippet = msg.type === 'image' ? '📷 Sent a photo' : msg.content;
+      showSystemNotification(msg.sender_name + ' • ' + roomName, bodySnippet);
+    }
+  }
 });
 
 socket.on('user_typing', ({ name }) => {
@@ -161,11 +387,12 @@ fetch('/messages/' + roomId)
     scrollToBottom(false);
   });
 
-// Render message
+// Render message with WhatsApp style Quote & Long-Press
 function renderMessage(msg) {
   const isMe = msg.sender_name === myName;
   const row = document.createElement('div');
   row.className = 'msg-row ' + (isMe ? 'outgoing' : 'incoming');
+  row.id = 'msg-' + msg.id;
 
   const avatar = document.createElement('div');
   avatar.className = 'bubble-avatar';
@@ -184,6 +411,38 @@ function renderMessage(msg) {
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
 
+  // ── Replied quote preview inside bubble (WhatsApp style) ──
+  if (msg.reply_to) {
+    const quoteEl = document.createElement('div');
+    quoteEl.className = 'replied-quote';
+    quoteEl.title = 'Click to jump to quoted message';
+    quoteEl.onclick = (e) => {
+      e.stopPropagation();
+      scrollToMessage(msg.reply_to.id);
+    };
+
+    const quoteBar = document.createElement('div');
+    quoteBar.className = 'replied-quote-bar';
+
+    const quoteBody = document.createElement('div');
+    quoteBody.className = 'replied-quote-body';
+
+    const quoteSender = document.createElement('div');
+    quoteSender.className = 'replied-quote-sender';
+    quoteSender.textContent = msg.reply_to.sender || 'Message';
+
+    const quoteText = document.createElement('div');
+    quoteText.className = 'replied-quote-text';
+    quoteText.textContent = msg.reply_to.text || '';
+
+    quoteBody.appendChild(quoteSender);
+    quoteBody.appendChild(quoteText);
+    quoteEl.appendChild(quoteBar);
+    quoteEl.appendChild(quoteBody);
+    bubble.appendChild(quoteEl);
+  }
+
+  // Bubble content
   if (msg.type === 'image') {
     const img = document.createElement('img');
     img.className = 'bubble-img';
@@ -193,7 +452,9 @@ function renderMessage(msg) {
     img.onclick = () => openLightbox(msg.content);
     bubble.appendChild(img);
   } else {
-    bubble.textContent = msg.content;
+    const textNode = document.createElement('span');
+    textNode.textContent = msg.content;
+    bubble.appendChild(textNode);
   }
 
   const timeEl = document.createElement('div');
@@ -203,8 +464,75 @@ function renderMessage(msg) {
   content.appendChild(bubble);
   content.appendChild(timeEl);
 
-  if (!isMe) row.appendChild(avatar);
-  row.appendChild(content);
+  // Desktop hover reply trigger button
+  const replyTrigger = document.createElement('button');
+  replyTrigger.type = 'button';
+  replyTrigger.className = 'msg-reply-trigger';
+  replyTrigger.title = 'Reply';
+  replyTrigger.setAttribute('aria-label', 'Reply to message');
+  replyTrigger.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="9 17 4 12 9 7"></polyline>
+    <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+  </svg>`;
+  replyTrigger.onclick = (e) => {
+    e.stopPropagation();
+    startReply(msg);
+  };
+
+  // ── Mobile Long-Press Detection (WhatsApp style) ──
+  let touchTimer = null;
+  let startX = 0;
+  let startY = 0;
+  let didMove = false;
+
+  bubble.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) return;
+    didMove = false;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+
+    touchTimer = setTimeout(() => {
+      if (!didMove) {
+        row.classList.add('touch-selecting');
+        setTimeout(() => row.classList.remove('touch-selecting'), 400);
+        startReply(msg);
+      }
+    }, 380); // 380ms hold triggers WhatsApp-style reply
+  }, { passive: true });
+
+  bubble.addEventListener('touchmove', (e) => {
+    if (!touchTimer) return;
+    const moveX = Math.abs(e.touches[0].clientX - startX);
+    const moveY = Math.abs(e.touches[0].clientY - startY);
+    if (moveX > 8 || moveY > 8) {
+      didMove = true;
+      clearTimeout(touchTimer);
+      touchTimer = null;
+    }
+  }, { passive: true });
+
+  bubble.addEventListener('touchend', () => {
+    if (touchTimer) clearTimeout(touchTimer);
+  });
+  bubble.addEventListener('touchcancel', () => {
+    if (touchTimer) clearTimeout(touchTimer);
+  });
+
+  // Desktop Right-click to reply
+  bubble.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    startReply(msg);
+  });
+
+  if (!isMe) {
+    row.appendChild(avatar);
+    row.appendChild(content);
+    row.appendChild(replyTrigger);
+  } else {
+    row.appendChild(replyTrigger);
+    row.appendChild(content);
+  }
+
   messagesArea.appendChild(row);
 }
 
@@ -221,50 +549,54 @@ function formatTime(ts) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// Send message
+// ── 5. Sending Messages ──────────────────────────────────────────────
 function sendMessage() {
   const text = msgInput.value.trim();
   if (!text) return;
-  socket.emit('send_message', { roomId, content: text, type: 'text', sender: myName });
+
+  const replyPayload = currentReply ? {
+    id: currentReply.id,
+    sender: currentReply.sender,
+    text: currentReply.text,
+    type: currentReply.type
+  } : null;
+
+  socket.emit('send_message', {
+    roomId,
+    content: text,
+    type: 'text',
+    sender: myName,
+    replyTo: replyPayload
+  });
+
+  cancelReply();
   msgInput.value = '';
   msgInput.style.height = '';
   clearTimeout(typingTimer);
   socket.emit('stop_typing', { roomId });
 }
 
-// WhatsApp-like send handler (keeps mobile keyboard open)
 function handleSend(e) {
-  if (e) {
-    e.preventDefault();
-  }
+  if (e) e.preventDefault();
   const now = Date.now();
   if (now - lastSendTime < 250) {
     msgInput.focus();
     return;
   }
   lastSendTime = now;
-
   sendMessage();
-
-  // Keep input focused so mobile keyboard never collapses
   msgInput.focus();
 }
 
-// Prevent button from stealing focus from msgInput on mobile & desktop
+// Send button listeners
 sendBtn.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   handleSend(e);
 });
-
 sendBtn.addEventListener('touchstart', (e) => {
   e.preventDefault();
   handleSend(e);
 }, { passive: false });
-
-sendBtn.addEventListener('mousedown', (e) => {
-  e.preventDefault();
-});
-
 sendBtn.addEventListener('click', (e) => {
   e.preventDefault();
   handleSend(e);
@@ -275,10 +607,12 @@ msgInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     handleSend(e);
+  } else if (e.key === 'Escape' && currentReply) {
+    cancelReply();
   }
 });
 
-// Auto-resize textarea
+// Auto-resize textarea & typing
 msgInput.addEventListener('input', () => {
   msgInput.style.height = 'auto';
   msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
@@ -288,14 +622,14 @@ msgInput.addEventListener('input', () => {
   typingTimer = setTimeout(() => socket.emit('stop_typing', { roomId }), 2000);
 });
 
-// Dismiss keyboard only when user taps message history (like WhatsApp)
+// Dismiss keyboard only when user taps blank history (like WhatsApp)
 messagesArea.addEventListener('pointerdown', (e) => {
-  if (e.target.tagName !== 'IMG' && document.activeElement === msgInput) {
+  if (e.target.tagName !== 'IMG' && !e.target.closest('.replied-quote') && document.activeElement === msgInput) {
     msgInput.blur();
   }
 });
 
-// Image upload
+// Image upload with optional reply
 document.getElementById('attachBtn').addEventListener('click', () => {
   document.getElementById('fileInput').click();
 });
@@ -312,7 +646,21 @@ document.getElementById('fileInput').addEventListener('change', async (e) => {
     const res = await fetch('/upload', { method: 'POST', body: fd });
     const data = await res.json();
     if (data.url) {
-      socket.emit('send_message', { roomId, content: data.url, type: 'image', sender: myName });
+      const replyPayload = currentReply ? {
+        id: currentReply.id,
+        sender: currentReply.sender,
+        text: currentReply.text,
+        type: currentReply.type
+      } : null;
+
+      socket.emit('send_message', {
+        roomId,
+        content: data.url,
+        type: 'image',
+        sender: myName,
+        replyTo: replyPayload
+      });
+      cancelReply();
     }
   } catch { alert('Upload failed'); }
   e.target.value = '';
@@ -357,8 +705,8 @@ if (window.visualViewport) {
     const vp = window.visualViewport;
     const chatPage = document.getElementById('chatPage');
     if (chatPage) {
-      chatPage.style.height = `${vp.height}px`;
-      chatPage.style.top = `${vp.offsetTop || 0}px`;
+      chatPage.style.height = vp.height + 'px';
+      chatPage.style.top = (vp.offsetTop || 0) + 'px';
     }
     scrollToBottom(false);
   };
@@ -370,8 +718,9 @@ msgInput.addEventListener('focus', () => {
   setTimeout(() => scrollToBottom(false), 250);
 });
 
-// Leave room
+// Leave room (explicit logout: clears 24-hr session)
 function leaveRoom() {
+  localStorage.removeItem('rakesh_chat_session');
   sessionStorage.removeItem('chatUser');
   window.location.href = '/chat';
 }
