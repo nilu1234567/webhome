@@ -552,18 +552,23 @@ html, body {
 }
 
 /* Input bar */
+/* ══════════════════════════════════════════════════════════════
+   WHATSAPP-STYLE INPUT BAR, CAPSULE & SEND BUTTON
+══════════════════════════════════════════════════════════════ */
 .input-bar {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 0.75rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
-  background: rgba(10,14,26,0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  align-items: flex-end;
+  gap: 0.55rem;
+  padding: 0.65rem 0.85rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
+  background: rgba(10, 14, 26, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid var(--border-strong);
   flex-shrink: 0;
   position: relative;
   z-index: 10;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .send-btn, .attach-btn, .icon-btn {
@@ -572,50 +577,79 @@ html, body {
   user-select: none;
   -webkit-user-select: none;
 }
-.send-btn svg, .attach-btn svg, .icon-btn svg {
-  pointer-events: none;
-  display: block;
-}
 
 .attach-btn {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border);
+  background: var(--surface-mid);
+  border: 1px solid var(--border-strong);
   border-radius: 50%;
   cursor: pointer;
-  color: var(--text-muted);
-  font-size: 1.1rem;
+  color: var(--text-dim);
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
+  transition: all 0.2s ease;
+  margin-bottom: 1px;
 }
-.attach-btn:hover { background: rgba(255,255,255,0.12); color: var(--primary); }
+.attach-btn:hover {
+  background: var(--surface-high);
+  color: var(--primary-bright);
+  border-color: rgba(0, 201, 167, 0.35);
+}
+.attach-btn:active {
+  transform: scale(0.94);
+}
 
-.msg-input {
+/* WhatsApp Message Input Capsule */
+.input-wrap {
   flex: 1;
-  padding: 0.65rem 1rem;
+  min-width: 0;
+  display: flex;
+  align-items: center;
   background: var(--surface-mid);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 24px;
+  padding: 0.25rem 0.95rem;
+  min-height: 44px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
+}
+
+.input-wrap:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.15);
+  background: var(--surface-low);
+}
+
+#msgInput, .msg-input {
+  width: 100%;
+  flex: 1;
+  background: transparent;
   color: var(--text);
   font-family: var(--font);
-  font-size: 0.95rem;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-full);
+  font-size: 15px;
+  border: none;
   outline: none;
   resize: none;
-  transition: border-color 0.2s;
-  line-height: 1.4;
+  line-height: 1.45;
+  padding: 0.38rem 0;
+  margin: 0;
   max-height: 120px;
   overflow-y: auto;
+  display: block;
 }
-.msg-input:focus { border-color: var(--primary); }
-.msg-input::placeholder { color: var(--text-muted); }
 
+#msgInput::placeholder, .msg-input::placeholder {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+/* WhatsApp Circular Send Button with Centered Arrow */
 .send-btn {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -624,13 +658,35 @@ html, body {
   border-radius: 50%;
   cursor: pointer;
   color: #0A0E1A;
-  font-size: 1.05rem;
   flex-shrink: 0;
-  box-shadow: var(--gradient-glow);
-  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 16px rgba(0, 201, 167, 0.38);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin-bottom: 1px;
 }
-.send-btn:hover { transform: scale(1.08); box-shadow: 0 4px 20px rgba(0,201,167,0.5); }
-.send-btn:active { transform: scale(0.95); }
+
+.send-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  pointer-events: none;
+  fill: #0A0E1A;
+  /* Centering the arrow centroid in circle */
+  transform: translate(1.5px, 0.5px);
+  transition: transform 0.15s ease;
+}
+
+.send-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 22px rgba(0, 201, 167, 0.55);
+}
+
+.send-btn:hover svg {
+  transform: translate(2px, 0.5px);
+}
+
+.send-btn:active {
+  transform: scale(0.94);
+}
 
 /* Image lightbox */
 .lightbox {
