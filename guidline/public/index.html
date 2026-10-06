@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CG भू-संपत्ति गाइडलाइन | Chhattisgarh Property Rate Portal</title>
+  <meta name="description" content="छत्तीसगढ़ के सभी जिलों की भू-संपत्ति गाइडलाइन दरें देखें।" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- Top Nav -->
+<header class="top-nav">
+  <a href="/" class="brand" style="text-decoration:none; color:inherit;">
+    <div class="brand-icon">🏡</div>
+    <span>CG भू-गाइडलाइन</span>
+  </a>
+  <button class="menu-btn" id="menuBtn" aria-label="Menu">
+    <span class="material-symbols-outlined">menu</span>
+  </button>
+</header>
+
+<div class="overlay" id="overlay"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-inner">
+    <a href="/" class="sidebar-link">
+      <span class="material-symbols-outlined">home</span>मुख्य पृष्ठ
+    </a>
+    <a href="#selection-card" class="sidebar-link" onclick="closeSidebar()">
+      <span class="material-symbols-outlined">search</span>दर खोजें
+    </a>
+    <a href="#pdf-section" class="sidebar-link" onclick="closeSidebar()">
+      <span class="material-symbols-outlined">description</span>गाइडलाइन देखें
+    </a>
+  </div>
+  <div class="sidebar-note">
+    <span class="sidebar-note-title">⚠️ जानकारी</span>
+    यह एक निजी पोर्टल है। किसी भी दर की पुष्टि हेतु विभाग से संपर्क करें।
+  </div>
+</nav>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p class="loading-text" id="loadingText">लोड हो रही है...</p>
+</div>
+
+<main>
+  <div class="container">
+
+    <!-- Hero -->
+    <section class="hero animate-in">
+      <div class="hero-logo">
+        <div class="hero-logo-ring"></div>
+        ₹
+      </div>
+      <div class="hero-badge">
+        <span class="material-symbols-outlined" style="font-size:12px">verified</span>
+        छत्तीसगढ़ &bull; Chhattisgarh
+      </div>
+      <h1>CG भू-संपत्ति<br/>गाइडलाइन</h1>
+      <p>छत्तीसगढ़ के सभी जिलों की भू-संपत्ति गाइडलाइन दरें<br/>एक स्थान पर देखें</p>
+    </section>
+
+    <!-- Error Banner -->
+    <div class="no-zip-banner" id="errorBanner" style="display:none;">
+      <strong>⚠️ Error!</strong> MEGA folder se connect nahi hua. <span id="errorMsg"></span>
+    </div>
+
+    <!-- Connecting Banner -->
+    <div class="connecting-banner" id="connectingBanner">
+      <div class="connecting-spinner"></div>
+      <div>
+        <strong>MEGA फ़ोल्डर से जुड़ रहा है...</strong><br/>
+        <small>कृपया थोडा इंतजार करें (केवल पहली बार)</small>
+      </div>
+    </div>
+
+    <!-- Selection Card -->
+    <section class="glass selection-card animate-in" id="selection-card" style="animation-delay:0.1s">
+      <div class="card-title">
+        <span class="material-symbols-outlined" style="font-size:14px">tune</span>
+        जिला और तहसील चुनें
+      </div>
+      <div class="dropdowns-row">
+        <div class="field-group">
+          <label class="field-label" for="districtSelect">
+            <span class="material-symbols-outlined">location_on</span>जिला (District)
+          </label>
+          <div class="select-wrap">
+            <select id="districtSelect"><option value="">&mdash; जिला चुनें &mdash;</option></select>
+            <span class="select-arrow material-symbols-outlined">expand_more</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="tehsilSelect">
+            <span class="material-symbols-outlined">map</span>तहसील (Tehsil)
+          </label>
+          <div class="select-wrap">
+            <select id="tehsilSelect" disabled><option value="">&mdash; पहले जिला चुनें &mdash;</option></select>
+            <span class="select-arrow material-symbols-outlined">expand_more</span>
+          </div>
+        </div>
+      </div>
+      <button class="view-btn" id="viewPdfBtn" disabled>
+        गाइडलाइन देखें
+      </button>
+    </section>
+
+    <!-- PDF Viewer (Scroll Mode) -->
+    <section class="glass animate-in" id="pdf-section" style="animation-delay:0.2s">
+      <div class="pdf-header">
+        <div class="pdf-title">
+          <span class="material-symbols-outlined" style="font-size:18px">auto_stories</span>
+          <span id="pdfTitleText">&mdash;</span>
+        </div>
+        <div class="pdf-controls">
+          <button class="ctrl-btn" id="zoomOutBtn"><span class="material-symbols-outlined">zoom_out</span></button>
+          <span class="zoom-badge" id="zoomBadge">150%</span>
+          <button class="ctrl-btn" id="zoomInBtn"><span class="material-symbols-outlined">zoom_in</span></button>
+          <span class="page-info" id="pageInfo">पृष्ठ — / —</span>
+        </div>
+      </div>
+      <div class="pdf-canvas-wrap" id="pdfScrollContainer"></div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="disclaimer">
+  <span class="material-symbols-outlined">warning</span>
+  <p><strong>चेतावनी:</strong> यह केवल सामान्य जानकारी के लिए है। किसी भी रेट की पुष्टि हेतु संबंधित विभाग से संपर्क करें। हम किसी भी रेट की पुष्टि नहीं करते।</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -149,6 +149,24 @@ app.get('/chat/:id',   (req, res) => res.sendFile(path.join(__dirname, 'chat', '
 app.get('/admin',            (req, res) => res.sendFile(path.join(__dirname, 'chat', 'admin-login.html')));
 app.get('/admin/dashboard',  (req, res) => res.sendFile(path.join(__dirname, 'chat', 'admin-dashboard.html')));
 
+// ── CG Guideline Rates Project (/guidline) ────────────────────
+const guideline = require('./guidline/guidelineRouter');
+
+// Guideline API
+app.use('/guidline/api', guideline.router);
+app.use('/api', guideline.router); // compatibility fallback
+
+// Guideline static assets & pages
+app.use('/guidline', express.static(path.join(__dirname, 'guidline', 'public')));
+app.get('/guidline', (req, res) => res.redirect('/guidline/'));
+app.get('/guidline/*', (req, res) => res.sendFile(path.join(__dirname, 'guidline', 'public', 'index.html')));
+
+// Handle spelling with 'e' (/guideline)
+app.use('/guideline/api', guideline.router);
+app.use('/guideline', express.static(path.join(__dirname, 'guidline', 'public')));
+app.get('/guideline', (req, res) => res.redirect('/guidline/'));
+app.get('/guideline/*', (req, res) => res.redirect(req.originalUrl.replace('/guideline', '/guidline')));
+
 // ── 3D Site SPA Fallback ──────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'dist', 'index.html')));
 
@@ -184,5 +202,11 @@ httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`   🌐 3D Site: http://localhost:${PORT}/`);
   console.log(`   💬 Chat:    http://localhost:${PORT}/chat`);
-  console.log(`   🔑 Admin:   http://localhost:${PORT}/admin`);
+    console.log(`   🔑 Admin:   http://localhost:${PORT}/admin`);
+  console.log(`   📑 Guideline: http://localhost:${PORT}/guidline`);
+
+  // Build MEGA index in background
+  guideline.buildMegaIndex().catch(err => {
+    console.error('[GUIDELINE] MEGA init failed:', err.message);
+  });
 });
