@@ -16,10 +16,10 @@
 
 <!-- Top Nav -->
 <header class="top-nav">
-  <a href="/" class="brand" style="text-decoration:none; color:inherit;">
+  <div class="brand">
     <div class="brand-icon">🏡</div>
     <span>CG भू-गाइडलाइन</span>
-  </a>
+  </div>
   <button class="menu-btn" id="menuBtn" aria-label="Menu">
     <span class="material-symbols-outlined">menu</span>
   </button>
@@ -29,7 +29,7 @@
 
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-inner">
-    <a href="/" class="sidebar-link">
+    <a href="#" class="sidebar-link active">
       <span class="material-symbols-outlined">home</span>मुख्य पृष्ठ
     </a>
     <a href="#selection-card" class="sidebar-link" onclick="closeSidebar()">
@@ -37,6 +37,9 @@
     </a>
     <a href="#pdf-section" class="sidebar-link" onclick="closeSidebar()">
       <span class="material-symbols-outlined">description</span>गाइडलाइन देखें
+    </a>
+    <a href="#calc-section" class="sidebar-link" onclick="closeSidebar()">
+      <span class="material-symbols-outlined">calculate</span>रजिस्ट्री शुल्क
     </a>
   </div>
   <div class="sidebar-note">
@@ -128,6 +131,40 @@
         </div>
       </div>
       <div class="pdf-canvas-wrap" id="pdfScrollContainer"></div>
+    </section>
+
+    <!-- Registry Fee Calculator Section -->
+    <section class="animate-in" id="calc-section" style="animation-delay:0.3s">
+
+      <!-- Section Header Card -->
+      <div class="calc-section-header glass">
+        <div class="calc-header-left">
+          <div class="calc-icon-wrap">
+            <span class="material-symbols-outlined">calculate</span>
+          </div>
+          <div>
+            <div class="calc-badge">⚡ नया टूल</div>
+            <h2 class="calc-title">रजिस्ट्री शुल्क कैलकुलेटर</h2>
+            <p class="calc-subtitle">स्टाम्प ड्यूटी और रजिस्ट्रेशन फीस तुरंत जानें</p>
+          </div>
+        </div>
+        <a href="regfee.html" target="_blank" class="calc-open-btn" id="calcOpenBtn">
+          <span class="material-symbols-outlined">open_in_new</span>
+          पूर्ण स्क्रीन
+        </a>
+      </div>
+
+      <!-- Embedded Calculator iframe -->
+      <div class="calc-iframe-wrap">
+        <iframe
+          src="regfee.html"
+          id="calcIframe"
+          title="रजिस्ट्री शुल्क कैलकुलेटर"
+          loading="lazy"
+          allowfullscreen
+        ></iframe>
+      </div>
+
     </section>
 
   </div>

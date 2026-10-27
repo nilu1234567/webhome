@@ -1,4 +1,4 @@
-:root{
+﻿:root{
   --bg:#0b0f0f;--surface:#101414;--surface-c:#1c2021;
   --on-surface:#e0e3e3;--on-sv:#b0b8b8;
   --primary:#f2ca50;--primary-c:#d4af37;--on-primary:#241a00;
@@ -234,6 +234,11 @@ main{min-height:100vh;padding-top:70px;padding-bottom:120px;}
   align-items:center;
   gap:16px;
   scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+@media(max-width:768px){
+  .pdf-canvas-wrap{ max-height:75vh; padding:12px 8px; gap:12px; }
 }
 /* Each page wrapper */
 .pdf-page-wrapper{
@@ -241,9 +246,11 @@ main{min-height:100vh;padding-top:70px;padding-bottom:120px;}
   display:flex;
   flex-direction:column;
   align-items:center;
+  max-width:100%;
 }
 .pdf-page-wrapper canvas{
   max-width:100%;
+  height:auto !important;
   box-shadow:0 4px 40px rgba(0,0,0,0.7);
   border-radius:4px;
   display:block;
@@ -380,3 +387,114 @@ main{min-height:100vh;padding-top:70px;padding-bottom:120px;}
 }
 
 /* duplicate removed */
+
+
+/* ── Registry Fee Calculator Section ──────────────────────────────── */
+#calc-section {
+  margin-bottom: 32px;
+}
+.calc-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  border-bottom: 1px solid rgba(212,175,55,0.1);
+  flex-wrap: wrap;
+}
+.calc-header-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.calc-icon-wrap {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.06));
+  border: 1px solid rgba(212,175,55,0.3);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(212,175,55,0.15);
+}
+.calc-icon-wrap .material-symbols-outlined {
+  font-size: 26px;
+}
+.calc-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: rgba(212,175,55,0.1);
+  border: 1px solid rgba(212,175,55,0.25);
+  padding: 3px 10px;
+  border-radius: 999px;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+.calc-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary) 0%, #ffe8a0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.calc-subtitle {
+  font-size: 0.82rem;
+  color: var(--on-sv);
+}
+.calc-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05));
+  border: 1px solid rgba(212,175,55,0.35);
+  color: var(--primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.calc-open-btn:hover {
+  background: rgba(212,175,55,0.22);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(212,175,55,0.2);
+}
+.calc-open-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+.calc-iframe-wrap {
+  background: #000;
+  border: 1px solid rgba(212,175,55,0.12);
+  border-top: none;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+.calc-iframe-wrap iframe {
+  width: 100%;
+  height: 90vh;
+  min-height: 600px;
+  border: none;
+  display: block;
+}
+@media(max-width:600px) {
+  .calc-section-header { padding: 18px 16px; }
+  .calc-title { font-size: 1rem; }
+  .calc-iframe-wrap iframe { height: 85vh; min-height: 500px; }
+  .calc-open-btn span:last-child { display: none; }
+}

@@ -1,4 +1,3 @@
-const API_BASE = (window.location.pathname.startsWith('/guidline') || window.location.pathname.startsWith('/guideline')) ? '/guidline/api' : '/api';
 // CG Guideline Portal - app.js
 // Fetches district/tehsil list and individual PDFs from MEGA via server API
 
@@ -35,10 +34,19 @@ const connectingBanner  = document.getElementById('connectingBanner');
 // ── State ─────────────────────────────────────────────────────────────
 let pdfDoc          = null;
 let totalPages      = 0;
-let scale           = 1.5;
+let scale           = getDefaultScale();
 let renderingAll    = false;
 let currentDistrict = '';
 let currentTehsil   = '';
+
+// ── Auto-Scale: mobile pe screen ke hisaab se scale decide karo ──────
+function getDefaultScale() {
+  const w = window.innerWidth;
+  if (w <= 480)  return 0.9;   // small mobile
+  if (w <= 768)  return 1.1;   // large mobile / tablet portrait
+  if (w <= 1024) return 1.3;   // tablet landscape
+  return 1.5;                   // desktop
+}
 
 // ── Sidebar ───────────────────────────────────────────────────────────
 menuBtn.addEventListener('click', () => {
@@ -76,7 +84,7 @@ async function init() {
 
   async function tryLoadDistricts() {
     try {
-      const status = await fetch(API_BASE + '/status').then(r => r.json());
+      const status = await fetch('/api/status').then(r => r.json());
 
       if (status.error) {
         connectingBanner.style.display = 'none';
@@ -99,7 +107,7 @@ async function init() {
 
       // Index ready — load districts
       connectingBanner.style.display = 'none';
-      const data = await fetch(API_BASE + '/districts').then(r => r.json());
+      const data = await fetch('/api/districts').then(r => r.json());
       districtSelect.innerHTML = '<option value="">— जिला चुनें —</option>';
       data.districts.forEach(d => {
         const o = document.createElement('option');
@@ -136,7 +144,7 @@ districtSelect.addEventListener('change', async () => {
   }
 
   try {
-    const data = await fetch(API_BASE + '/tehsils/' + encodeURIComponent(dist)).then(r => r.json());
+    const data = await fetch('/api/tehsils/' + encodeURIComponent(dist)).then(r => r.json());
     tehsilSelect.innerHTML = '<option value="">— तहसील चुनें —</option>';
     data.tehsils.forEach(t => {
       const o = document.createElement('option');
@@ -161,13 +169,16 @@ viewPdfBtn.addEventListener('click', async () => {
   const teh  = tehsilSelect.value;
   if (!dist || !teh) return;
 
+  // Naya PDF load hone pe screen size ke hisaab se fresh default scale lo
+  scale = getDefaultScale();
+
   currentDistrict = dist;
   currentTehsil   = teh;
 
   showLoading(dist + ' / ' + teh + ' लोड हो रही है...');
 
   try {
-    const url = API_BASE + '/pdf/' + encodeURIComponent(dist) + '/' + encodeURIComponent(teh);
+    const url = '/api/pdf/' + encodeURIComponent(dist) + '/' + encodeURIComponent(teh);
 
     pdfDoc = await pdfjsLib.getDocument({
       url: url,
@@ -208,11 +219,28 @@ async function renderAllPages() {
   // Clear old pages
   pdfScrollContainer.innerHTML = '';
 
-  const dpr = window.devicePixelRatio || 1;
+  // DPR-aware rendering: canvas actual size = CSS size * dpr (for sharp text)
+  // But CSS width = container ke andar fit ho — sikoodi nahi
+  const dpr         = Math.min(window.devicePixelRatio || 1, 2); // max 2x to avoid memory issues
+  const containerW  = pdfScrollContainer.clientWidth - 32; // 16px padding dono taraf
 
   for (let num = 1; num <= totalPages; num++) {
-    const page = await pdfDoc.getPage(num);
-    const vp   = page.getViewport({ scale: scale * dpr });
+    const page   = await pdfDoc.getPage(num);
+
+    // Pehle 1x viewport lo page ka natural size jaanno
+    const vpNatural = page.getViewport({ scale: 1 });
+
+    // User scale ke hisaab se desired CSS width
+    let desiredCssWidth = vpNatural.width * scale;
+
+    // Agar mobile pe bada ho toh container me fit karo
+    if (desiredCssWidth > containerW) {
+      desiredCssWidth = containerW;
+    }
+
+    // Actual render scale = CSS size ko DPR se multiply
+    const renderScale = (desiredCssWidth / vpNatural.width) * dpr;
+    const vp = page.getViewport({ scale: renderScale });
 
     // Page wrapper
     const wrapper = document.createElement('div');
@@ -224,12 +252,13 @@ async function renderAllPages() {
     badge.textContent = `${num} / ${totalPages}`;
     wrapper.appendChild(badge);
 
-    // Canvas
+    // Canvas — actual pixels = vp.width/height, CSS size = desiredCssWidth
     const canvas = document.createElement('canvas');
     canvas.dataset.page = num;
     canvas.width  = vp.width;
     canvas.height = vp.height;
-    canvas.style.width  = (vp.width  / dpr) + 'px';
+    // CSS size set karo — isse PDF sharp dikhegi, sikoodi nahi
+    canvas.style.width  = desiredCssWidth + 'px';
     canvas.style.height = (vp.height / dpr) + 'px';
 
     // Disable right-click on each canvas
@@ -264,6 +293,41 @@ async function renderAllPages() {
   zoomBadge.textContent = Math.round(scale * 100) + '%';
   renderingAll = false;
 }
+
+// ── Pinch-to-Zoom (Mobile Touch Support) ─────────────────────────────
+let pinchStartDist = 0;
+let pinchStartScale = 1;
+
+pdfScrollContainer.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 2) {
+    pinchStartDist  = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    pinchStartScale = scale;
+  }
+}, { passive: true });
+
+pdfScrollContainer.addEventListener('touchmove', (e) => {
+  if (e.touches.length === 2 && pinchStartDist > 0) {
+    const dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    const ratio    = dist / pinchStartDist;
+    const newScale = Math.min(3.5, Math.max(0.5, parseFloat((pinchStartScale * ratio).toFixed(2))));
+    if (Math.abs(newScale - scale) > 0.05) {
+      scale = newScale;
+    }
+  }
+}, { passive: true });
+
+pdfScrollContainer.addEventListener('touchend', (e) => {
+  if (pinchStartDist > 0 && e.touches.length < 2) {
+    pinchStartDist = 0;
+    renderAllPages(); // pinch end pe re-render
+  }
+}, { passive: true });
 
 // ── Zoom ──────────────────────────────────────────────────────────────
 zoomInBtn.addEventListener('click', () => {
