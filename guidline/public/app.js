@@ -221,11 +221,16 @@ async function renderAllPages() {
 
   // DPR-aware rendering: canvas actual size = CSS size * dpr (for sharp text)
   // But CSS width = container ke andar fit ho — sikoodi nahi
-  const dpr         = Math.min(window.devicePixelRatio || 1, 2); // max 2x to avoid memory issues
-  const containerW  = pdfScrollContainer.clientWidth - 32; // 16px padding dono taraf
+  const dpr = Math.min(window.devicePixelRatio || 1, 2); // max 2x to avoid memory issues
+
+  // clientWidth 0 ho sakta hai agar container abhi visible nahi — fallback to window
+  const containerW = Math.max(
+    pdfScrollContainer.clientWidth - 32,
+    window.innerWidth - 64
+  );
 
   for (let num = 1; num <= totalPages; num++) {
-    const page   = await pdfDoc.getPage(num);
+    const page = await pdfDoc.getPage(num);
 
     // Pehle 1x viewport lo page ka natural size jaanno
     const vpNatural = page.getViewport({ scale: 1 });
@@ -233,14 +238,19 @@ async function renderAllPages() {
     // User scale ke hisaab se desired CSS width
     let desiredCssWidth = vpNatural.width * scale;
 
-    // Agar mobile pe bada ho toh container me fit karo
+    // Agar container se bada ho toh fit karo
     if (desiredCssWidth > containerW) {
       desiredCssWidth = containerW;
     }
+    // Minimum width — bahut chhota nahi hona chahiye
+    desiredCssWidth = Math.max(desiredCssWidth, 200);
 
     // Actual render scale = CSS size ko DPR se multiply
     const renderScale = (desiredCssWidth / vpNatural.width) * dpr;
     const vp = page.getViewport({ scale: renderScale });
+
+    // CSS height = natural aspect ratio ke hisaab se (DPR se divide karo)
+    const cssHeight = desiredCssWidth * (vpNatural.height / vpNatural.width);
 
     // Page wrapper
     const wrapper = document.createElement('div');
@@ -252,14 +262,14 @@ async function renderAllPages() {
     badge.textContent = `${num} / ${totalPages}`;
     wrapper.appendChild(badge);
 
-    // Canvas — actual pixels = vp.width/height, CSS size = desiredCssWidth
+    // Canvas — actual pixels = vp.width/height, CSS size = desiredCssWidth x cssHeight
     const canvas = document.createElement('canvas');
     canvas.dataset.page = num;
-    canvas.width  = vp.width;
-    canvas.height = vp.height;
-    // CSS size set karo — isse PDF sharp dikhegi, sikoodi nahi
+    canvas.width  = Math.round(vp.width);
+    canvas.height = Math.round(vp.height);
+    // CSS size — aspect ratio maintain hoga, portrait/landscape dono me sahi
     canvas.style.width  = desiredCssWidth + 'px';
-    canvas.style.height = (vp.height / dpr) + 'px';
+    canvas.style.height = cssHeight + 'px';
 
     // Disable right-click on each canvas
     canvas.addEventListener('contextmenu', e => e.preventDefault());
@@ -293,6 +303,7 @@ async function renderAllPages() {
   zoomBadge.textContent = Math.round(scale * 100) + '%';
   renderingAll = false;
 }
+
 
 // ── Pinch-to-Zoom (Mobile Touch Support) ─────────────────────────────
 let pinchStartDist = 0;

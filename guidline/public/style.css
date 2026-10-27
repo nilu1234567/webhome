@@ -1,4 +1,4 @@
-﻿:root{
+:root{
   --bg:#0b0f0f;--surface:#101414;--surface-c:#1c2021;
   --on-surface:#e0e3e3;--on-sv:#b0b8b8;
   --primary:#f2ca50;--primary-c:#d4af37;--on-primary:#241a00;
@@ -250,7 +250,7 @@ main{min-height:100vh;padding-top:70px;padding-bottom:120px;}
 }
 .pdf-page-wrapper canvas{
   max-width:100%;
-  height:auto !important;
+  /* height is set by JS — do NOT override with height:auto */
   box-shadow:0 4px 40px rgba(0,0,0,0.7);
   border-radius:4px;
   display:block;
