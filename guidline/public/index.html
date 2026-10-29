@@ -143,29 +143,45 @@
             <span class="material-symbols-outlined">calculate</span>
           </div>
           <div>
-            <div class="calc-badge">⚡ नया टूल</div>
             <h2 class="calc-title">रजिस्ट्री शुल्क कैलकुलेटर</h2>
             <p class="calc-subtitle">स्टाम्प ड्यूटी और रजिस्ट्रेशन फीस तुरंत जानें</p>
           </div>
         </div>
-        <a href="regfee.html" target="_blank" class="calc-open-btn" id="calcOpenBtn">
-          <span class="material-symbols-outlined">open_in_new</span>
-          पूर्ण स्क्रीन
-        </a>
-      </div>
-
-      <!-- Embedded Calculator iframe -->
-      <div class="calc-iframe-wrap">
-        <iframe
-          src="regfee.html"
-          id="calcIframe"
-          title="रजिस्ट्री शुल्क कैलकुलेटर"
-          loading="lazy"
-          allowfullscreen
-        ></iframe>
+        <button class="calc-open-btn" id="calcOpenBtn" onclick="openCalcModal()">
+          <span class="material-symbols-outlined">calculate</span>
+          कैलकुलेटर खोलें
+        </button>
       </div>
 
     </section>
+
+    <!-- Calculator Modal -->
+    <div class="calc-modal-overlay" id="calcModalOverlay" onclick="closeCalcModal(event)">
+      <div class="calc-modal" id="calcModal">
+        <div class="calc-modal-header">
+          <div class="calc-modal-title">
+            <span class="material-symbols-outlined">calculate</span>
+            रजिस्ट्री शुल्क कैलकुलेटर
+          </div>
+          <div class="calc-modal-actions">
+            <a href="regfee.html" target="_blank" class="calc-modal-ext-btn" title="नई Tab में खोलें">
+              <span class="material-symbols-outlined">open_in_new</span>
+            </a>
+            <button class="calc-modal-close-btn" onclick="closeCalcModal()" aria-label="बंद करें">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+        </div>
+        <div class="calc-modal-body">
+          <iframe
+            src=""
+            id="calcIframe"
+            title="रजिस्ट्री शुल्क कैलकुलेटर"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
 
   </div>
 </main>
@@ -175,6 +191,27 @@
   <p><strong>चेतावनी:</strong> यह केवल सामान्य जानकारी के लिए है। किसी भी रेट की पुष्टि हेतु संबंधित विभाग से संपर्क करें। हम किसी भी रेट की पुष्टि नहीं करते।</p>
 </footer>
 
+<script>
+  function openCalcModal() {
+    const overlay = document.getElementById('calcModalOverlay');
+    const iframe  = document.getElementById('calcIframe');
+    if (!iframe.src || iframe.src === window.location.href) {
+      iframe.src = 'regfee.html';
+    }
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeCalcModal(e) {
+    if (e && e.target !== document.getElementById('calcModalOverlay') && e.type !== 'click') return;
+    if (e && e.currentTarget && e.currentTarget.id === 'calcModalOverlay' && e.target !== e.currentTarget) return;
+    const overlay = document.getElementById('calcModalOverlay');
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeCalcModal();
+  });
+</script>
 <script src="app.js"></script>
 </body>
 </html>

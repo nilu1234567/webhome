@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const { File } = require('megajs');
 
 const router = express.Router();
@@ -127,8 +127,17 @@ router.get('/pdf/:district/:tehsil', (req, res) => {
 
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'inline; filename="' + encodeURIComponent(tehsil) + '.pdf"');
-  res.setHeader('Cache-Control', 'private, max-age=300');
+  // Cache for 1 hour in browser, 2 hours in shared proxies — repeat views will be instant
+  res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=7200, stale-while-revalidate=86400');
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  // ETag for conditional requests (uses file size + name as fingerprint)
+  const etag = `"${file.size || 0}-${encodeURIComponent(tehsil)}"`;
+  res.setHeader('ETag', etag);
+  res.setHeader('Vary', 'Accept-Encoding');
+  // Return 304 Not Modified if client already has this version
+  if (req.headers['if-none-match'] === etag) {
+    return res.status(304).end();
+  }
   if (file.size) res.setHeader('Content-Length', file.size);
 
   const download = file.download({});

@@ -452,49 +452,143 @@ main{min-height:100vh;padding-top:70px;padding-bottom:120px;}
   font-size: 0.82rem;
   color: var(--on-sv);
 }
+
+/* -- Calculator section open button updated to match page style -- */
 .calc-open-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05));
-  border: 1px solid rgba(212,175,55,0.35);
-  color: var(--primary);
+  background: linear-gradient(135deg, var(--primary-c), #b8860b);
+  border: none;
+  color: var(--on-primary);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(212,175,55,0.3);
 }
 .calc-open-btn:hover {
-  background: rgba(212,175,55,0.22);
-  border-color: var(--primary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(212,175,55,0.2);
+  background: linear-gradient(135deg, var(--primary), #c8a020);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(212,175,55,0.45);
 }
 .calc-open-btn .material-symbols-outlined {
+  font-size: 20px;
+}
+
+/* -- Calculator Modal Overlay -- */
+.calc-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.calc-modal-overlay.open {
+  display: flex;
+  animation: fadeSlideUp 0.25s ease forwards;
+}
+.calc-modal {
+  width: 100%;
+  max-width: 1100px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(11,15,15,0.97);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-top-color: rgba(212,175,55,0.4);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,175,55,0.08);
+  overflow: hidden;
+}
+.calc-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  background: rgba(16,20,20,0.8);
+  border-bottom: 1px solid rgba(212,175,55,0.12);
+  flex-shrink: 0;
+}
+.calc-modal-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.calc-modal-title .material-symbols-outlined {
+  font-size: 20px;
+}
+.calc-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.calc-modal-ext-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: rgba(212,175,55,0.08);
+  border: 1px solid rgba(212,175,55,0.2);
+  color: var(--primary);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.calc-modal-ext-btn:hover {
+  background: rgba(212,175,55,0.18);
+  border-color: var(--primary);
+}
+.calc-modal-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--on-sv);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.calc-modal-close-btn:hover {
+  background: rgba(255,100,100,0.1);
+  border-color: rgba(255,100,100,0.3);
+  color: #ff6b6b;
+}
+.calc-modal-close-btn .material-symbols-outlined,
+.calc-modal-ext-btn .material-symbols-outlined {
   font-size: 18px;
 }
-.calc-iframe-wrap {
-  background: #000;
-  border: 1px solid rgba(212,175,55,0.12);
-  border-top: none;
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+.calc-modal-body {
+  flex: 1;
   overflow: hidden;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
 }
-.calc-iframe-wrap iframe {
+.calc-modal-body iframe {
   width: 100%;
-  height: 90vh;
-  min-height: 600px;
+  height: 100%;
   border: none;
   display: block;
 }
 @media(max-width:600px) {
+  .calc-modal-overlay { padding: 0; }
+  .calc-modal { height: 100vh; border-radius: 0; }
   .calc-section-header { padding: 18px 16px; }
   .calc-title { font-size: 1rem; }
-  .calc-iframe-wrap iframe { height: 85vh; min-height: 500px; }
-  .calc-open-btn span:last-child { display: none; }
 }
