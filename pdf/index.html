@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="hi" class="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF & Image Studio Pro — Master Document Suite</title>
+    <title>PDF & Image Studio Pro — Rakesh.qd.je</title>
     <!-- Tailwind CSS with Dark Mode support -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -161,7 +161,7 @@
                 if (!files.length) return;
 
                 setLoading(true);
-                setProcessingMsg("High-Resolution HD pages aur Text extract ho raha hai...");
+                setProcessingMsg("Extracting High-Resolution HD pages and text...");
 
                 try {
                     const newPages = [...pages];
@@ -248,7 +248,7 @@
                     setRawFiles(newRawFiles);
                     setPages(newPages);
                 } catch (err) {
-                    alert("File load karne me error: " + err.message);
+                    alert("Error loading file: " + err.message);
                 } finally {
                     setLoading(false);
                     setProcessingMsg(null);
@@ -346,11 +346,11 @@
                     : pages;
 
                 if (!targetPages.length) {
-                    alert("Koi page chuna nahi gaya!");
+                    alert("No page selected!");
                     return;
                 }
 
-                setProcessingMsg("JPG Files generate aur compress ho rahi hain...");
+                setProcessingMsg("Generating and compressing JPG files into ZIP...");
                 try {
                     const zip = new window.JSZip();
                     for (let i = 0; i < targetPages.length; i++) {
@@ -365,7 +365,7 @@
                     link.download = `PDF_Pages_Images.zip`;
                     link.click();
                 } catch (err) {
-                    alert("JPG export error: " + err.message);
+                    alert("JPG Export Error: " + err.message);
                 } finally {
                     setProcessingMsg(null);
                 }
@@ -373,7 +373,7 @@
 
             // DIRECT SINGLE PAGE PDF DOWNLOAD
             const downloadPageAsPdf = async (page) => {
-                setProcessingMsg(`Page "${page.customName}.pdf" download ho raha hai...`);
+                setProcessingMsg(`Downloading page "${page.customName}.pdf"...`);
                 try {
                     const { PDFDocument, degrees } = window.PDFLib;
                     const newDoc = await PDFDocument.create();
@@ -404,7 +404,7 @@
                     link.download = `${page.customName || 'Page'}.pdf`;
                     link.click();
                 } catch (err) {
-                    alert("PDF export error: " + err.message);
+                    alert("PDF Export Error: " + err.message);
                 } finally {
                     setProcessingMsg(null);
                 }
@@ -413,7 +413,7 @@
             // Split Mode: Save All Pages as separate PDFs (batch download)
             const splitAndDownloadAll = async () => {
                 if (!pages.length) return;
-                setProcessingMsg("Sabhi pages ko alag PDF bana kar save kiya ja raha hai...");
+                setProcessingMsg("Exporting all pages as individual PDFs...");
                 for (let i = 0; i < pages.length; i++) {
                     await downloadPageAsPdf(pages[i]);
                     await new Promise(r => setTimeout(r, 400));
@@ -428,11 +428,11 @@
                     : pages;
 
                 if (!targetPages.length) {
-                    alert("Kripya kam se kam ek page chunein!");
+                    alert("Please select at least one page!");
                     return;
                 }
 
-                setProcessingMsg("Master PDF merge ki ja rahi hai...");
+                setProcessingMsg("Merging into Master PDF document...");
                 try {
                     const { PDFDocument, degrees } = window.PDFLib;
                     const mergedDoc = await PDFDocument.create();
@@ -467,7 +467,7 @@
                     link.download = `${mergedFileName.trim() || 'Merged_Master'}.pdf`;
                     link.click();
                 } catch (err) {
-                    alert("Merge karne me error: " + err.message);
+                    alert("Error merging PDF: " + err.message);
                 } finally {
                     setProcessingMsg(null);
                 }
@@ -885,10 +885,10 @@
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <h1 className="text-lg font-black tracking-tight text-white font-heading">PDF & Image Studio</h1>
+                                        <h1 className="text-lg font-black tracking-tight text-white font-heading">Rakesh.qd.je <span className="text-indigo-400 font-normal">PDF Studio</span></h1>
                                         <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">PRO</span>
                                     </div>
-                                    <p className="text-xs text-slate-400">HD Clear Preview · Instant Rename · Arrow PDF Download</p>
+                                    <p className="text-xs text-slate-400">Rakesh.qd.je Official Suite · HD Preview · Rename · Edit & Merge</p>
                                 </div>
                             </div>
 
@@ -899,7 +899,7 @@
                                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'split' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white'}`}
                                 >
                                     <Icons.Scissors />
-                                    Split & Rename Studio (Bada Dekhein)
+                                    Split & Rename Studio
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('organize')}
@@ -963,9 +963,9 @@
                                     <div className="w-20 h-20 rounded-3xl bg-indigo-600/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mx-auto mb-6 group-hover:scale-110 transition-transform">
                                         <Icons.Upload />
                                     </div>
-                                    <h2 className="text-2xl font-black text-white font-heading mb-3">PDF ya Images Upload Karein</h2>
+                                    <h2 className="text-2xl font-black text-white font-heading mb-3">Upload PDF Documents or Images</h2>
                                     <p className="text-slate-400 text-sm mb-8 leading-relaxed">
-                                        PDF files upload karein. Har page ka content <b>bada aur bilkul saaf (HD)</b> dikhega jisse rename karna behad aasan hoga!
+                                        Upload PDF files or images. Each page displays in <b>Ultra-HD Resolution</b> with live text extraction for seamless renaming and editing.
                                     </p>
                                     <div className="flex justify-center gap-4">
                                         <button
@@ -1002,14 +1002,14 @@
                                                 disabled={focusedPageIndex === 0}
                                                 className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white text-xs font-bold flex items-center gap-1"
                                             >
-                                                <Icons.ArrowLeft /> Pichla Page
+                                                <Icons.ArrowLeft /> Previous Page
                                             </button>
                                             <button
                                                 onClick={nextRenamePage}
                                                 disabled={focusedPageIndex === pages.length - 1}
                                                 className="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white text-xs font-bold flex items-center gap-1 shadow"
                                             >
-                                                Agla Page <Icons.ArrowRight />
+                                                Next Page <Icons.ArrowRight />
                                             </button>
                                         </div>
                                     </div>
@@ -1064,13 +1064,13 @@
                                                     onClick={() => downloadPageAsPdf(activeFocusedPage)}
                                                     className="px-3 py-1 rounded-xl bg-indigo-600/40 hover:bg-indigo-600 text-white text-xs font-bold flex items-center gap-1.5 border border-indigo-400/40 transition-all shadow"
                                                 >
-                                                    <Icons.DownloadArrow /> Is Page Ki PDF Download
+                                                    <Icons.DownloadArrow /> Download Single Page PDF
                                                 </button>
                                                 <button
                                                     onClick={() => openEditor(activeFocusedPage)}
                                                     className="px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 border border-white/10"
                                                 >
-                                                    <Icons.Edit /> Edit
+                                                    <Icons.Edit /> Edit Page
                                                 </button>
                                             </div>
                                         </div>
@@ -1092,11 +1092,11 @@
                                         {/* EXTRACTED TEXT BAR AT BOTTOM */}
                                         <div className="mt-3 p-3 bg-slate-900/60 rounded-xl border border-white/5">
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-[10px] uppercase font-bold text-slate-400">📝 Page Text Content (Padhein):</span>
+                                                <span className="text-[10px] uppercase font-bold text-slate-400">📝 Page Text Content:</span>
                                                 <span className="text-[10px] text-slate-500 font-mono">{activeFocusedPage.textContent?.length || 0} characters</span>
                                             </div>
                                             <p className="text-xs font-mono text-slate-300 max-h-20 overflow-y-auto leading-relaxed select-all">
-                                                {activeFocusedPage.textContent || "(Is page par selectable text nahi mila, ye ek scanned image/photo ho sakti hai. Upar badi preview me padhein.)"}
+                                                {activeFocusedPage.textContent || "(No selectable text detected on this page. It may be a scanned photo or image.)"}
                                             </p>
                                         </div>
                                     </div>
@@ -1107,14 +1107,14 @@
                                         <div className="glass-panel rounded-3xl p-6 border-2 border-indigo-500/40 shadow-2xl space-y-5">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                                                    Page #{focusedPageIndex + 1} Renaming
+                                                    Page #{focusedPageIndex + 1} Properties
                                                 </span>
                                                 <span className="text-xs text-slate-400">Press <b>Enter</b> for Next Page</span>
                                             </div>
 
                                             <div>
                                                 <label className="text-xs font-black text-white block mb-2">
-                                                    Is Page Ka Naya Naam Likhein:
+                                                    Enter New Page Name:
                                                 </label>
                                                 <div className="flex items-center gap-2">
                                                     <input
@@ -1127,7 +1127,7 @@
                                                                 nextRenamePage();
                                                             }
                                                         }}
-                                                        placeholder="Jaise: Aadhaar_Card, Marksheet_10th..."
+                                                        placeholder="e.g. Invoice_2026, Document_Page_1..."
                                                         className="w-full px-4 py-3 bg-slate-950 border-2 border-indigo-500/50 rounded-2xl text-sm font-bold text-white outline-none focus:border-indigo-400 shadow-inner"
                                                     />
                                                     <span className="text-sm font-bold text-slate-400">.pdf</span>
@@ -1141,14 +1141,14 @@
                                                     disabled={focusedPageIndex === 0}
                                                     className="flex-1 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all"
                                                 >
-                                                    <Icons.ArrowLeft /> Pichla Page
+                                                    <Icons.ArrowLeft /> Previous Page
                                                 </button>
                                                 <button
                                                     onClick={nextRenamePage}
                                                     disabled={focusedPageIndex === pages.length - 1}
                                                     className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all"
                                                 >
-                                                    Agla Page <Icons.ArrowRight />
+                                                    Next Page <Icons.ArrowRight />
                                                 </button>
                                             </div>
                                         </div>
@@ -1156,8 +1156,8 @@
                                         {/* ALL PAGES QUICK SELECTOR STRIP */}
                                         <div className="glass-panel rounded-3xl p-4 border border-white/10 space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-xs font-bold text-slate-300">Sabhi Pages Ki List ({pages.length})</span>
-                                                <span className="text-[11px] text-slate-500">Kisi bhi page par click karke dekhein</span>
+                                                <span className="text-xs font-bold text-slate-300">All Pages List ({pages.length})</span>
+                                                <span className="text-[11px] text-slate-500">Click any page to inspect</span>
                                             </div>
 
                                             <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1">
@@ -1220,7 +1220,7 @@
                                     </div>
 
                                     <div className="flex items-center gap-3">
-                                        <label className="text-xs font-bold text-slate-400">Save As Document Name:</label>
+                                        <label className="text-xs font-bold text-slate-400">Master Document Name:</label>
                                         <input
                                             type="text"
                                             value={mergedFileName}
@@ -1267,7 +1267,7 @@
                                                                 downloadPageAsPdf(page);
                                                             }}
                                                             className="px-2.5 py-1 rounded-lg bg-indigo-600/40 hover:bg-indigo-600 text-indigo-100 hover:text-white border border-indigo-500/50 flex items-center gap-1 text-[11px] font-bold shadow transition-all active:scale-95"
-                                                            title="Teer par click karein: Is page ko direct PDF download karein"
+                                                            title="Click arrow: Download this single page as PDF"
                                                         >
                                                             <Icons.DownloadArrow />
                                                             <span>PDF</span>
@@ -1276,7 +1276,7 @@
                                                         <button
                                                             onClick={() => movePage(idx, -1)}
                                                             disabled={idx === 0}
-                                                            title="Peeche karein"
+                                                            title="Move Left"
                                                             className="p-1 text-slate-400 hover:text-white disabled:opacity-30 rounded"
                                                         >
                                                             <Icons.ArrowLeft />
@@ -1284,7 +1284,7 @@
                                                         <button
                                                             onClick={() => movePage(idx, 1)}
                                                             disabled={idx === filteredPages.length - 1}
-                                                            title="Aage karein"
+                                                            title="Move Right"
                                                             className="p-1 text-slate-400 hover:text-white disabled:opacity-30 rounded"
                                                         >
                                                             <Icons.ArrowRight />
@@ -1303,7 +1303,7 @@
                                                 <div 
                                                     onClick={() => setInspectingPage(page)}
                                                     className="relative p-2 bg-slate-950 flex items-center justify-center min-h-[220px] max-h-[260px] overflow-hidden cursor-pointer"
-                                                    title="Click karke Bada Dekhein (Inspect)"
+                                                    title="Click to Inspect in High Definition"
                                                 >
                                                     <img
                                                         src={page.image}
@@ -1327,7 +1327,7 @@
                                                             }}
                                                             className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl text-xs font-black flex items-center gap-1.5"
                                                         >
-                                                            <Icons.Eye /> Bada Dekhein (Zoom)
+                                                            <Icons.Eye /> Inspect (Zoom)
                                                         </button>
 
                                                         <div className="flex items-center gap-2 pt-1">
@@ -1338,7 +1338,7 @@
                                                                 }}
                                                                 className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1"
                                                             >
-                                                                <Icons.Edit /> Edit
+                                                                <Icons.Edit /> Edit Page
                                                             </button>
                                                             <button
                                                                 onClick={(e) => {
@@ -1389,11 +1389,11 @@
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-black text-white font-heading">PDF to JPG Converter</h3>
-                                        <p className="text-slate-400 text-xs mt-1">PDF ke sabhi pages ko alag-alag high quality HD JPG image me extract karein.</p>
+                                        <p className="text-slate-400 text-xs mt-1">Extract all PDF pages into high-resolution standalone JPG images.</p>
                                     </div>
                                     <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/5 space-y-2">
                                         <p className="text-xs font-bold text-slate-300">Total Loaded Pages: {pages.length}</p>
-                                        <p className="text-xs text-slate-400">Sabhi pages ka ZIP ek click me download karein.</p>
+                                        <p className="text-xs text-slate-400">Download all pages as a ZIP archive in one click.</p>
                                     </div>
                                     <button
                                         onClick={() => exportPagesAsJpgZip(false)}
@@ -1409,23 +1409,34 @@
                                         <Icons.FileText />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-black text-white font-heading">JPG / Photos to PDF</h3>
-                                        <p className="text-slate-400 text-xs mt-1">Apni photos aur images ko jodkar ek PDF document banayein.</p>
+                                        <h3 className="text-xl font-black text-white font-heading">JPG / Photos to PDF Converter</h3>
+                                        <p className="text-slate-400 text-xs mt-1">Combine your photos and images into a single professional PDF document.</p>
                                     </div>
                                     <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/5 space-y-2">
-                                        <p className="text-xs font-bold text-slate-300">Images in grid: {pages.filter(p => p.type === 'image').length}</p>
-                                        <p className="text-xs text-slate-400">Nayi images add karein aur unhe PDF me convert karein.</p>
+                                        <p className="text-xs font-bold text-slate-300">Images Loaded: {pages.filter(p => p.type === 'image').length}</p>
+                                        <p className="text-xs text-slate-400">Add images and convert them directly into PDF format.</p>
                                     </div>
                                     <button
                                         onClick={() => imageInputRef.current.click()}
                                         className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold border border-white/10 flex items-center justify-center gap-2"
                                     >
-                                        <Icons.Photo /> + Upload More Images
+                                        <Icons.Photo /> + Upload Images
                                     </button>
                                 </div>
                             </div>
                         )}
                     </main>
+
+                    {/* FOOTER BRANDING */}
+                    <footer className="border-t border-white/5 py-4 px-6 text-center text-xs text-slate-500">
+                        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+                            <span>Powered by <a href="https://rakesh.qd.je" target="_blank" className="text-indigo-400 hover:text-indigo-300 font-bold">Rakesh.qd.je</a></span>
+                            <span>Client-Side Secure PDF & Image Suite · Zero Server Uploads</span>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
 
                     {/* ============================================================== */}
                     {/* GLOBAL FULLSCREEN QUICK INSPECT MODAL (WITH RENAME BAR) */}
@@ -1502,7 +1513,7 @@
                                 <div className="p-4 bg-slate-900/80 border-b border-white/10 flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <span className="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                                            Page Editor
+                                            Rakesh.qd.je Page Editor
                                         </span>
                                         <h3 className="text-sm font-bold text-white">{editingPage.customName}</h3>
                                     </div>
@@ -1559,7 +1570,7 @@
                                             onClick={() => stampInputRef.current.click()}
                                             className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${editorTool === 'stamp' ? 'bg-purple-600 text-white shadow' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
                                         >
-                                            <Icons.Photo /> + Add Image / Stamp
+                                            <Icons.Photo /> + Add Stamp / Image
                                         </button>
                                         <input
                                             type="file"
@@ -1583,7 +1594,7 @@
                                                         setTextInput(e.target.value);
                                                         updateSelectedTextAnnotation('text', e.target.value);
                                                     }}
-                                                    placeholder="Text likhein..."
+                                                    placeholder="Type text here..."
                                                     className="px-2.5 py-1 bg-slate-950 border border-white/20 rounded-lg text-xs font-bold text-white outline-none focus:border-indigo-400 w-36"
                                                 />
                                                 <span className="text-[11px] font-bold text-slate-400 ml-1">Size:</span>
@@ -1656,14 +1667,14 @@
                                                     className={`w-6 h-6 rounded-full bg-pink-400 border-2 ${highlightColor.includes('244, 114, 182') ? 'border-white scale-110 shadow' : 'border-transparent opacity-70'}`}
                                                     title="Pink"
                                                 />
-                                                <span className="text-[10px] text-amber-200/80 ml-2">Drag karke line highlight karein</span>
+                                                <span className="text-[10px] text-amber-200/80 ml-2">Drag across text to highlight</span>
                                             </div>
                                         )}
 
                                         {/* WHITENER INSTRUCTION */}
                                         {editorTool === 'whitener' && (
                                             <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-white/10">
-                                                <span className="text-[11px] text-slate-300">Whiteout karne ke liye mouse drag karke box banayein</span>
+                                                <span className="text-[11px] text-slate-300">Drag mouse to create a whiteout mask box</span>
                                             </div>
                                         )}
 
@@ -1671,8 +1682,8 @@
                                         {(editorTool === 'stamp' || selectedStampIdx !== null) && annotations[selectedStampIdx] && (
                                             <div className="flex items-center gap-2 bg-slate-900/80 px-3 py-1 rounded-xl border border-indigo-500/30">
                                                 <span className="text-[11px] font-bold text-indigo-300">Image Size:</span>
-                                                <button onClick={() => resizeSelectedStamp(0.85)} className="px-2 py-0.5 rounded bg-slate-800 text-xs font-bold text-white hover:bg-slate-700">- Chota</button>
-                                                <button onClick={() => resizeSelectedStamp(1.15)} className="px-2 py-0.5 rounded bg-slate-800 text-xs font-bold text-white hover:bg-slate-700">+ Bada</button>
+                                                <button onClick={() => resizeSelectedStamp(0.85)} className="px-2 py-0.5 rounded bg-slate-800 text-xs font-bold text-white hover:bg-slate-700">- Small</button>
+                                                <button onClick={() => resizeSelectedStamp(1.15)} className="px-2 py-0.5 rounded bg-slate-800 text-xs font-bold text-white hover:bg-slate-700">+ Large</button>
                                                 <input
                                                     type="range"
                                                     min="40"
