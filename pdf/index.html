@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="hi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF & Image Studio Pro — Master Document Suite</title>
+    <!-- Tailwind CSS with Dark Mode support -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        darkbase: '#0b0f19',
+                        darkcard: '#111827',
+                        darkelevated: '#1f293d'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- PDF Libraries & JSZip -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #dfe2f1; }
+        h1, h2, h3, h4, .font-heading { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-modal {
+            background: rgba(15, 23, 42, 0.96);
+            backdrop-filter: blur(28px);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #262f45; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
+    </style>
+</head>
+<body class="min-h-screen selection:bg-indigo-600 selection:text-white">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Custom SVG Icons
+        const Icons = {
+            Sparkles: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>,
+            FileText: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>,
+            Photo: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>,
+            Upload: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>,
+            Download: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>,
+            DownloadArrow: () => <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>,
+            Scissors: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879a3 3 0 11-4.242-4.242 3 3 0 014.242 0zM7 7a3 3 0 114.242 4.242 3 3 0 01-4.242-4.242z"/></svg>,
+            Edit: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>,
+            Trash: () => <svg className="w-4 h-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>,
+            Rotate: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>,
+            Layers: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>,
+            Highlighter: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>,
+            Eraser: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11l-8.5-8.5a2.121 2.121 0 00-3 0L3.5 6.5a2.121 2.121 0 000 3L12 18m7-7l2 2m-2-2l-7 7m7-7L9.5 2.5a2.121 2.121 0 00-3 0L3 6m15 15H9"/></svg>,
+            Type: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>,
+            Check: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>,
+            X: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>,
+            ArrowLeft: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/></svg>,
+            ArrowRight: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>,
+            ZoomIn: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>,
+            ZoomOut: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"/></svg>,
+            Eye: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>,
+            Tag: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>,
+            Loader: () => <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        };
+
+        // Common Quick Preset Tags for Instant Renaming
+        const QUICK_TAGS = [
+            "Aadhaar Card",
+            "PAN Card",
+            "Marksheet",
+            "Passport Photo",
+            "Voter ID",
+            "Bank Passbook",
+            "Electricity Bill",
+            "Ration Card",
+            "Income Certificate",
+            "Caste Certificate",
+            "Invoice Bill",
+            "Resume CV",
+            "Agreement Paper"
+        ];
+
+        function App() {
+            // Main States
+            const [activeTab, setActiveTab] = useState('split'); // default to split/rename as user is actively working on it
+            const [pages, setPages] = useState([]);
+            const [rawFiles, setRawFiles] = useState([]); // Stores raw ArrayBuffers
+            const [selectedPageIds, setSelectedPageIds] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [processingMsg, setProcessingMsg] = useState(null);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [mergedFileName, setMergedFileName] = useState('Master_Document');
+
+            // Large Preview & Rename Studio State (Split & Rename Side-by-side)
+            const [focusedPageIndex, setFocusedPageIndex] = useState(0);
+            const [zoomLevel, setZoomLevel] = useState(100); // 75, 100, 125, 150, 200%
+
+            // Global Fullscreen Quick Inspector Modal (Accessible from any tab!)
+            const [inspectingPage, setInspectingPage] = useState(null);
+            const [modalZoom, setModalZoom] = useState(100);
+
+            // Editor Modal State
+            const [editingPage, setEditingPage] = useState(null);
+            const [editorTool, setEditorTool] = useState('whitener');
+            const [highlightColor, setHighlightColor] = useState('rgba(250, 204, 21, 0.45)');
+            const [textInput, setTextInput] = useState('APPROVED');
+            const [textColor, setTextColor] = useState('#ef4444');
+            const [textSize, setTextSize] = useState(28);
+            const [annotations, setAnnotations] = useState([]);
+            const [selectedStampIdx, setSelectedStampIdx] = useState(null);
+
+            // Drag / Resize State for Editor
+            const [isDrawing, setIsDrawing] = useState(false);
+            const [drawStart, setDrawStart] = useState({ x: 0, y: 0 });
+            const [dragMode, setDragMode] = useState(null);
+            const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+            const fileInputRef = useRef(null);
+            const imageInputRef = useRef(null);
+            const stampInputRef = useRef(null);
+            const editorCanvasRef = useRef(null);
+            const renameInputRef = useRef(null);
+
+            // Initialize PDF.js
+            useEffect(() => {
+                if (window.pdfjsLib) {
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                }
+            }, []);
+
+            // Handle PDF and Image file uploads (with HIGH RESOLUTION scale 2.0 & Text extraction)
+            const handleFiles = async (filesList) => {
+                const files = Array.from(filesList);
+                if (!files.length) return;
+
+                setLoading(true);
+                setProcessingMsg("High-Resolution HD pages aur Text extract ho raha hai...");
+
+                try {
+                    const newPages = [...pages];
+                    const newRawFiles = [...rawFiles];
+
+                    for (const file of files) {
+                        const buffer = await file.arrayBuffer();
+                        const fileIndex = newRawFiles.length;
+                        newRawFiles.push({
+                            name: file.name,
+                            type: file.type,
+                            buffer: buffer.slice(0)
+                        });
+
+                        if (file.type === 'application/pdf') {
+                            const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+                            for (let i = 1; i <= pdf.numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                
+                                // RENDER AT HIGH RESOLUTION (Scale 2.0 = Crystal Clear Text even on Zoom)
+                                const viewport = page.getViewport({ scale: 2.0 });
+                                const canvas = document.createElement('canvas');
+                                canvas.width = viewport.width;
+                                canvas.height = viewport.height;
+                                const ctx = canvas.getContext('2d');
+                                await page.render({ canvasContext: ctx, viewport }).promise;
+
+                                // Extract actual text content from page
+                                let extractedText = '';
+                                try {
+                                    const textContent = await page.getTextContent();
+                                    extractedText = textContent.items
+                                        .map(item => item.str)
+                                        .join(' ')
+                                        .replace(/\s+/g, ' ')
+                                        .trim();
+                                } catch (e) {
+                                    console.warn("Text extract error:", e);
+                                }
+
+                                const pageId = `${fileIndex}-${i - 1}-${Date.now()}-${Math.random()}`;
+                                newPages.push({
+                                    id: pageId,
+                                    fileIndex,
+                                    pageIndex: i - 1,
+                                    pageNumber: i,
+                                    fileName: file.name,
+                                    customName: `${file.name.replace(/\.[^/.]+$/, "")}_Page_${i}`,
+                                    type: 'pdf',
+                                    rotation: 0,
+                                    image: canvas.toDataURL('image/jpeg', 0.92), // Crisp HD image
+                                    textContent: extractedText,
+                                    width: viewport.width,
+                                    height: viewport.height
+                                });
+                            }
+                        } else if (file.type.startsWith('image/')) {
+                            // Single Image as a Page
+                            const imgUrl = URL.createObjectURL(file);
+                            const img = new Image();
+                            await new Promise((resolve) => {
+                                img.onload = resolve;
+                                img.src = imgUrl;
+                            });
+
+                            const pageId = `img-${fileIndex}-${Date.now()}-${Math.random()}`;
+                            newPages.push({
+                                id: pageId,
+                                fileIndex,
+                                pageIndex: 0,
+                                pageNumber: 1,
+                                fileName: file.name,
+                                customName: file.name.replace(/\.[^/.]+$/, ""),
+                                type: 'image',
+                                rotation: 0,
+                                image: imgUrl,
+                                textContent: `Image: ${file.name} (${img.width}x${img.height} px)`,
+                                width: img.width,
+                                height: img.height
+                            });
+                        }
+                    }
+
+                    setRawFiles(newRawFiles);
+                    setPages(newPages);
+                } catch (err) {
+                    alert("File load karne me error: " + err.message);
+                } finally {
+                    setLoading(false);
+                    setProcessingMsg(null);
+                }
+            };
+
+            // Selection toggle
+            const toggleSelect = (id) => {
+                setSelectedPageIds(prev =>
+                    prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+                );
+            };
+
+            const selectAll = () => {
+                if (selectedPageIds.length === pages.length) {
+                    setSelectedPageIds([]);
+                } else {
+                    setSelectedPageIds(pages.map(p => p.id));
+                }
+            };
+
+            // Delete single or selected pages
+            const deletePage = (id) => {
+                setPages(prev => prev.filter(p => p.id !== id));
+                setSelectedPageIds(prev => prev.filter(x => x !== id));
+            };
+
+            const deleteSelected = () => {
+                if (!selectedPageIds.length) return;
+                setPages(prev => prev.filter(p => !selectedPageIds.includes(p.id)));
+                setSelectedPageIds([]);
+            };
+
+            // Rotate Page
+            const rotatePage = (id) => {
+                setPages(prev => prev.map(p => {
+                    if (p.id === id) {
+                        return { ...p, rotation: (p.rotation + 90) % 360 };
+                    }
+                    return p;
+                }));
+            };
+
+            // Reorder Pages
+            const movePage = (index, direction) => {
+                const targetIndex = index + direction;
+                if (targetIndex < 0 || targetIndex >= pages.length) return;
+                const newPages = [...pages];
+                const temp = newPages[index];
+                newPages[index] = newPages[targetIndex];
+                newPages[targetIndex] = temp;
+                setPages(newPages);
+            };
+
+            // Rename Page
+            const updatePageName = (id, newName) => {
+                setPages(prev => prev.map(p => p.id === id ? { ...p, customName: newName } : p));
+            };
+
+            // Apply quick tag to current page
+            const applyTagToPage = (tag, pageId) => {
+                const page = pages.find(p => p.id === pageId);
+                if (!page) return;
+                const newName = `${tag}_${page.pageNumber || 1}`;
+                updatePageName(pageId, newName);
+            };
+
+            // Go to Next Page in Focused Rename Studio
+            const nextRenamePage = () => {
+                if (focusedPageIndex < pages.length - 1) {
+                    setFocusedPageIndex(prev => prev + 1);
+                    setTimeout(() => renameInputRef.current?.focus(), 50);
+                }
+            };
+
+            const prevRenamePage = () => {
+                if (focusedPageIndex > 0) {
+                    setFocusedPageIndex(prev => prev - 1);
+                    setTimeout(() => renameInputRef.current?.focus(), 50);
+                }
+            };
+
+            // Download Single Page as High-Res JPG
+            const downloadPageAsJpg = (page) => {
+                const link = document.createElement('a');
+                link.href = page.image;
+                link.download = `${page.customName || 'Page'}.jpg`;
+                link.click();
+            };
+
+            // Download All or Selected Pages as JPGs (Batch / ZIP)
+            const exportPagesAsJpgZip = async (onlySelected = false) => {
+                const targetPages = onlySelected
+                    ? pages.filter(p => selectedPageIds.includes(p.id))
+                    : pages;
+
+                if (!targetPages.length) {
+                    alert("Koi page chuna nahi gaya!");
+                    return;
+                }
+
+                setProcessingMsg("JPG Files generate aur compress ho rahi hain...");
+                try {
+                    const zip = new window.JSZip();
+                    for (let i = 0; i < targetPages.length; i++) {
+                        const page = targetPages[i];
+                        const base64Data = page.image.split(',')[1];
+                        zip.file(`${page.customName || `Page_${i + 1}`}.jpg`, base64Data, { base64: true });
+                    }
+
+                    const content = await zip.generateAsync({ type: "blob" });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(content);
+                    link.download = `PDF_Pages_Images.zip`;
+                    link.click();
+                } catch (err) {
+                    alert("JPG export error: " + err.message);
+                } finally {
+                    setProcessingMsg(null);
+                }
+            };
+
+            // DIRECT SINGLE PAGE PDF DOWNLOAD
+            const downloadPageAsPdf = async (page) => {
+                setProcessingMsg(`Page "${page.customName}.pdf" download ho raha hai...`);
+                try {
+                    const { PDFDocument, degrees } = window.PDFLib;
+                    const newDoc = await PDFDocument.create();
+
+                    if (page.isEdited || page.type === 'image') {
+                        const imgBytes = await fetch(page.image).then(res => res.arrayBuffer());
+                        const embeddedImg = await newDoc.embedJpg(imgBytes);
+                        const newPage = newDoc.addPage([embeddedImg.width, embeddedImg.height]);
+                        newPage.drawImage(embeddedImg, {
+                            x: 0,
+                            y: 0,
+                            width: embeddedImg.width,
+                            height: embeddedImg.height,
+                            rotate: degrees(page.rotation)
+                        });
+                    } else {
+                        const raw = rawFiles[page.fileIndex].buffer.slice(0);
+                        const srcDoc = await PDFDocument.load(raw);
+                        const [copied] = await newDoc.copyPages(srcDoc, [page.pageIndex]);
+                        if (page.rotation) copied.setRotation(degrees(page.rotation));
+                        newDoc.addPage(copied);
+                    }
+
+                    const pdfBytes = await newDoc.save();
+                    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `${page.customName || 'Page'}.pdf`;
+                    link.click();
+                } catch (err) {
+                    alert("PDF export error: " + err.message);
+                } finally {
+                    setProcessingMsg(null);
+                }
+            };
+
+            // Split Mode: Save All Pages as separate PDFs (batch download)
+            const splitAndDownloadAll = async () => {
+                if (!pages.length) return;
+                setProcessingMsg("Sabhi pages ko alag PDF bana kar save kiya ja raha hai...");
+                for (let i = 0; i < pages.length; i++) {
+                    await downloadPageAsPdf(pages[i]);
+                    await new Promise(r => setTimeout(r, 400));
+                }
+                setProcessingMsg(null);
+            };
+
+            // MERGE ALL or SELECTED PAGES into a single master PDF
+            const mergeAndSavePdf = async (onlySelected = false) => {
+                const targetPages = onlySelected
+                    ? pages.filter(p => selectedPageIds.includes(p.id))
+                    : pages;
+
+                if (!targetPages.length) {
+                    alert("Kripya kam se kam ek page chunein!");
+                    return;
+                }
+
+                setProcessingMsg("Master PDF merge ki ja rahi hai...");
+                try {
+                    const { PDFDocument, degrees } = window.PDFLib;
+                    const mergedDoc = await PDFDocument.create();
+
+                    for (const page of targetPages) {
+                        if (page.isEdited || page.type === 'image') {
+                            const imgBytes = await fetch(page.image).then(res => res.arrayBuffer());
+                            const embeddedImg = await mergedDoc.embedJpg(imgBytes);
+                            const p = mergedDoc.addPage([embeddedImg.width, embeddedImg.height]);
+                            p.drawImage(embeddedImg, {
+                                x: 0,
+                                y: 0,
+                                width: embeddedImg.width,
+                                height: embeddedImg.height,
+                                rotate: degrees(page.rotation)
+                            });
+                        } else {
+                            const raw = rawFiles[page.fileIndex].buffer.slice(0);
+                            const srcDoc = await PDFDocument.load(raw);
+                            const [copied] = await mergedDoc.copyPages(srcDoc, [page.pageIndex]);
+                            if (page.rotation) {
+                                copied.setRotation(degrees((copied.getRotation().angle + page.rotation) % 360));
+                            }
+                            mergedDoc.addPage(copied);
+                        }
+                    }
+
+                    const pdfBytes = await mergedDoc.save();
+                    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `${mergedFileName.trim() || 'Merged_Master'}.pdf`;
+                    link.click();
+                } catch (err) {
+                    alert("Merge karne me error: " + err.message);
+                } finally {
+                    setProcessingMsg(null);
+                }
+            };
+
+            // ==========================================
+            // CANVAS PAGE EDITOR (Whitener, Highlighter, Text, Move/Resize Image Stamp)
+            // ==========================================
+            const openEditor = (page) => {
+                setEditingPage(page);
+                setAnnotations([]);
+                setSelectedStampIdx(null);
+                setTimeout(() => redrawEditorCanvas(page, [], null), 100);
+            };
+
+            const closeEditor = () => {
+                setEditingPage(null);
+                setAnnotations([]);
+                setSelectedStampIdx(null);
+            };
+
+            const redrawEditorCanvas = (page, currentAnnotations, selectedIdx = null) => {
+                const canvas = editorCanvasRef.current;
+                if (!canvas || !page) return;
+                const ctx = canvas.getContext('2d');
+
+                const baseImg = new Image();
+                baseImg.onload = () => {
+                    canvas.width = baseImg.width;
+                    canvas.height = baseImg.height;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(baseImg, 0, 0);
+
+                    // Render annotations
+                    currentAnnotations.forEach((ann, idx) => {
+                        if (ann.type === 'whitener') {
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(ann.x, ann.y, ann.w, ann.h);
+                        } else if (ann.type === 'highlighter') {
+                            ctx.fillStyle = ann.color || 'rgba(250, 204, 21, 0.45)';
+                            ctx.fillRect(ann.x, ann.y, ann.w, ann.h);
+                        } else if (ann.type === 'text') {
+                            ctx.font = `bold ${ann.size || 28}px sans-serif`;
+                            const metrics = ctx.measureText(ann.text || '');
+                            const textW = Math.max(20, metrics.width);
+                            const textH = (ann.size || 28) * 1.2;
+
+                            ctx.fillStyle = ann.color || '#ff0000';
+                            ctx.textBaseline = 'top';
+                            ctx.fillText(ann.text, ann.x, ann.y);
+
+                            // Draw selection box and drag handle when selected
+                            if (idx === selectedIdx) {
+                                ctx.strokeStyle = '#6366f1';
+                                ctx.lineWidth = 2;
+                                ctx.setLineDash([4, 4]);
+                                ctx.strokeRect(ann.x - 4, ann.y - 4, textW + 8, textH + 8);
+                                ctx.setLineDash([]);
+
+                                // Mini badge showing it's selected & movable
+                                ctx.fillStyle = '#6366f1';
+                                ctx.font = '10px sans-serif';
+                                ctx.fillRect(ann.x - 4, ann.y - 20, 50, 16);
+                                ctx.fillStyle = '#ffffff';
+                                ctx.fillText('Move', ann.x, ann.y - 17);
+                            }
+                        } else if (ann.type === 'image' && ann.imgObj) {
+                            ctx.drawImage(ann.imgObj, ann.x, ann.y, ann.w, ann.h);
+
+                            if (idx === selectedIdx) {
+                                ctx.strokeStyle = '#6366f1';
+                                ctx.lineWidth = 3;
+                                ctx.setLineDash([6, 6]);
+                                ctx.strokeRect(ann.x, ann.y, ann.w, ann.h);
+                                ctx.setLineDash([]);
+
+                                const handleSize = 20;
+                                ctx.fillStyle = '#6366f1';
+                                ctx.fillRect(ann.x + ann.w - handleSize / 2, ann.y + ann.h - handleSize / 2, handleSize, handleSize);
+                                ctx.strokeStyle = '#ffffff';
+                                ctx.lineWidth = 2;
+                                ctx.strokeRect(ann.x + ann.w - handleSize / 2, ann.y + ann.h - handleSize / 2, handleSize, handleSize);
+                            }
+                        }
+                    });
+                };
+                baseImg.src = page.image;
+            };
+
+            const getCanvasCoordinates = (e) => {
+                const canvas = editorCanvasRef.current;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                return {
+                    x: (e.clientX - rect.left) * scaleX,
+                    y: (e.clientY - rect.top) * scaleY
+                };
+            };
+
+            const handleCanvasMouseDown = (e) => {
+                const { x, y } = getCanvasCoordinates(e);
+                const canvas = editorCanvasRef.current;
+                const ctx = canvas ? canvas.getContext('2d') : null;
+
+                // 1. Check if user clicked on an Image Stamp (move or resize handle)
+                for (let i = annotations.length - 1; i >= 0; i--) {
+                    const ann = annotations[i];
+                    if (ann.type === 'image') {
+                        const handleRadius = 30;
+                        const handleX = ann.x + ann.w;
+                        const handleY = ann.y + ann.h;
+                        if (Math.abs(x - handleX) < handleRadius && Math.abs(y - handleY) < handleRadius) {
+                            setSelectedStampIdx(i);
+                            setEditorTool('stamp');
+                            setDragMode('resize-stamp');
+                            redrawEditorCanvas(editingPage, annotations, i);
+                            return;
+                        }
+
+                        if (x >= ann.x && x <= ann.x + ann.w && y >= ann.y && y <= ann.y + ann.h) {
+                            setSelectedStampIdx(i);
+                            setEditorTool('stamp');
+                            setDragMode('move-stamp');
+                            setDragOffset({ x: x - ann.x, y: y - ann.y });
+                            redrawEditorCanvas(editingPage, annotations, i);
+                            return;
+                        }
+                    } else if (ann.type === 'text') {
+                        // Check if user clicked on existing Text annotation to select & move it
+                        if (ctx) {
+                            ctx.font = `bold ${ann.size || 28}px sans-serif`;
+                            const metrics = ctx.measureText(ann.text || '');
+                            const textW = Math.max(30, metrics.width);
+                            const textH = (ann.size || 28) * 1.3;
+
+                            if (x >= ann.x - 10 && x <= ann.x + textW + 10 && y >= ann.y - 10 && y <= ann.y + textH + 10) {
+                                setSelectedStampIdx(i);
+                                setEditorTool('text');
+                                setTextInput(ann.text);
+                                setTextColor(ann.color || '#ef4444');
+                                setTextSize(ann.size || 28);
+                                setDragMode('move-text');
+                                setDragOffset({ x: x - ann.x, y: y - ann.y });
+                                redrawEditorCanvas(editingPage, annotations, i);
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                // If clicking on empty canvas, deselect current selection
+                if (selectedStampIdx !== null) {
+                    setSelectedStampIdx(null);
+                    redrawEditorCanvas(editingPage, annotations, null);
+                }
+
+                // 2. If text tool is active and we didn't click existing text -> Add new text and select it immediately for moving
+                if (editorTool === 'text') {
+                    const newAnn = {
+                        type: 'text',
+                        x,
+                        y,
+                        text: textInput,
+                        color: textColor,
+                        size: textSize
+                    };
+                    const updated = [...annotations, newAnn];
+                    const newIndex = updated.length - 1;
+                    setAnnotations(updated);
+                    setSelectedStampIdx(newIndex);
+                    redrawEditorCanvas(editingPage, updated, newIndex);
+                    return;
+                }
+
+                // 3. Whitener or Highlighter drawing
+                if (editorTool === 'whitener' || editorTool === 'highlighter') {
+                    setIsDrawing(true);
+                    setDrawStart({ x, y });
+                }
+            };
+
+            const handleCanvasMouseMove = (e) => {
+                const { x, y } = getCanvasCoordinates(e);
+
+                // Moving Text annotation
+                if (dragMode === 'move-text' && selectedStampIdx !== null) {
+                    const updated = [...annotations];
+                    const ann = { ...updated[selectedStampIdx] };
+                    if (ann.type === 'text') {
+                        ann.x = x - dragOffset.x;
+                        ann.y = y - dragOffset.y;
+                        updated[selectedStampIdx] = ann;
+                        setAnnotations(updated);
+                        redrawEditorCanvas(editingPage, updated, selectedStampIdx);
+                        return;
+                    }
+                }
+
+                // Moving Image Stamp
+                if (dragMode === 'move-stamp' && selectedStampIdx !== null) {
+                    const updated = [...annotations];
+                    const ann = { ...updated[selectedStampIdx] };
+                    ann.x = x - dragOffset.x;
+                    ann.y = y - dragOffset.y;
+                    updated[selectedStampIdx] = ann;
+                    setAnnotations(updated);
+                    redrawEditorCanvas(editingPage, updated, selectedStampIdx);
+                    return;
+                }
+
+                // Resizing Image Stamp
+                if (dragMode === 'resize-stamp' && selectedStampIdx !== null) {
+                    const updated = [...annotations];
+                    const ann = { ...updated[selectedStampIdx] };
+                    const newW = Math.max(30, x - ann.x);
+                    ann.w = newW;
+                    ann.h = newW / (ann.aspect || 1);
+                    updated[selectedStampIdx] = ann;
+                    setAnnotations(updated);
+                    redrawEditorCanvas(editingPage, updated, selectedStampIdx);
+                    return;
+                }
+
+                if (!isDrawing) return;
+                redrawEditorCanvas(editingPage, annotations, selectedStampIdx);
+
+                const canvas = editorCanvasRef.current;
+                const ctx = canvas.getContext('2d');
+                const boxX = Math.min(drawStart.x, x);
+                const boxY = Math.min(drawStart.y, y);
+                const boxW = Math.abs(x - drawStart.x);
+                const boxH = Math.abs(y - drawStart.y);
+
+                if (editorTool === 'whitener') {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.fillRect(boxX, boxY, boxW, boxH);
+                    ctx.strokeStyle = '#6366f1';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(boxX, boxY, boxW, boxH);
+                } else if (editorTool === 'highlighter') {
+                    ctx.fillStyle = highlightColor;
+                    ctx.fillRect(boxX, boxY, boxW, boxH);
+                }
+            };
+
+            const handleCanvasMouseUp = (e) => {
+                if (dragMode) {
+                    setDragMode(null);
+                    return;
+                }
+
+                if (!isDrawing) return;
+                setIsDrawing(false);
+
+                // Commit the drawn whitener or highlighter box to annotations!
+                const { x, y } = getCanvasCoordinates(e);
+                const boxX = Math.min(drawStart.x, x);
+                const boxY = Math.min(drawStart.y, y);
+                const boxW = Math.abs(x - drawStart.x);
+                const boxH = Math.abs(y - drawStart.y);
+
+                // Ignore accidental tiny clicks (< 5px)
+                if (boxW > 4 && boxH > 4) {
+                    const newAnn = {
+                        type: editorTool, // 'whitener' or 'highlighter'
+                        x: boxX,
+                        y: boxY,
+                        w: boxW,
+                        h: boxH,
+                        color: editorTool === 'highlighter' ? highlightColor : '#ffffff'
+                    };
+                    const updated = [...annotations, newAnn];
+                    setAnnotations(updated);
+                    redrawEditorCanvas(editingPage, updated, null);
+                } else {
+                    redrawEditorCanvas(editingPage, annotations, null);
+                }
+            };
+
+            const handleAddImageStamp = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = editorCanvasRef.current;
+                    const aspect = img.width / img.height;
+                    const stampW = Math.min(img.width, 260);
+                    const stampH = stampW / aspect;
+                    const x = (canvas.width - stampW) / 2;
+                    const y = (canvas.height - stampH) / 2;
+
+                    const newAnn = {
+                        type: 'image',
+                        imgObj: img,
+                        aspect,
+                        x, y, w: stampW, h: stampH
+                    };
+                    const updated = [...annotations, newAnn];
+                    const newIndex = updated.length - 1;
+                    setAnnotations(updated);
+                    setSelectedStampIdx(newIndex);
+                    setEditorTool('stamp');
+                    redrawEditorCanvas(editingPage, updated, newIndex);
+                };
+                img.src = URL.createObjectURL(file);
+                e.target.value = '';
+            };
+
+            const resizeSelectedStamp = (factor) => {
+                if (selectedStampIdx === null) return;
+                const updated = [...annotations];
+                const ann = { ...updated[selectedStampIdx] };
+                if (ann.type !== 'image') return;
+
+                const newW = Math.max(30, ann.w * factor);
+                ann.w = newW;
+                ann.h = newW / (ann.aspect || 1);
+                updated[selectedStampIdx] = ann;
+                setAnnotations(updated);
+                redrawEditorCanvas(editingPage, updated, selectedStampIdx);
+            };
+
+            const setSelectedStampWidth = (widthVal) => {
+                if (selectedStampIdx === null) return;
+                const updated = [...annotations];
+                const ann = { ...updated[selectedStampIdx] };
+                if (ann.type !== 'image') return;
+
+                ann.w = widthVal;
+                ann.h = widthVal / (ann.aspect || 1);
+                updated[selectedStampIdx] = ann;
+                setAnnotations(updated);
+                redrawEditorCanvas(editingPage, updated, selectedStampIdx);
+            };
+
+            const updateSelectedTextAnnotation = (key, value) => {
+                if (selectedStampIdx === null) return;
+                const updated = [...annotations];
+                const ann = { ...updated[selectedStampIdx] };
+                if (ann.type !== 'text') return;
+
+                ann[key] = value;
+                updated[selectedStampIdx] = ann;
+                setAnnotations(updated);
+                redrawEditorCanvas(editingPage, updated, selectedStampIdx);
+            };
+
+            const deleteSelectedAnnotation = () => {
+                if (selectedStampIdx === null) return;
+                const updated = annotations.filter((_, idx) => idx !== selectedStampIdx);
+                setAnnotations(updated);
+                setSelectedStampIdx(null);
+                redrawEditorCanvas(editingPage, updated, null);
+            };
+
+            const deleteSelectedStamp = () => {
+                deleteSelectedAnnotation();
+            };
+
+            const savePageEdits = () => {
+                const canvas = editorCanvasRef.current;
+                if (!canvas || !editingPage) return;
+
+                redrawEditorCanvas(editingPage, annotations, null);
+
+                setTimeout(() => {
+                    const updatedDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                    setPages(prev => prev.map(p => {
+                        if (p.id === editingPage.id) {
+                            return {
+                                ...p,
+                                image: updatedDataUrl,
+                                isEdited: true
+                            };
+                        }
+                        return p;
+                    }));
+                    closeEditor();
+                }, 50);
+            };
+
+            const undoLastAnnotation = () => {
+                if (!annotations.length) return;
+                const updated = annotations.slice(0, -1);
+                setAnnotations(updated);
+                setSelectedStampIdx(null);
+                redrawEditorCanvas(editingPage, updated, null);
+            };
+
+            const clearAllAnnotations = () => {
+                setAnnotations([]);
+                setSelectedStampIdx(null);
+                redrawEditorCanvas(editingPage, [], null);
+            };
+
+            const filteredPages = pages.filter(p =>
+                p.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                p.customName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (p.textContent && p.textContent.toLowerCase().includes(searchTerm.toLowerCase()))
+            );
+
+            const activeFocusedPage = pages[focusedPageIndex] || pages[0];
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    {/* TOP NAVBAR */}
+                    <header className="glass-panel sticky top-0 z-40 border-b border-white/10 px-6 py-3.5">
+                        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+                            {/* Brand */}
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                                    <Icons.Sparkles />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h1 className="text-lg font-black tracking-tight text-white font-heading">PDF & Image Studio</h1>
+                                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">PRO</span>
+                                    </div>
+                                    <p className="text-xs text-slate-400">HD Clear Preview · Instant Rename · Arrow PDF Download</p>
+                                </div>
+                            </div>
+
+                            {/* Tool Navigation Tabs */}
+                            <div className="flex items-center bg-slate-900/80 p-1 rounded-2xl border border-white/10">
+                                <button
+                                    onClick={() => setActiveTab('split')}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'split' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white'}`}
+                                >
+                                    <Icons.Scissors />
+                                    Split & Rename Studio (Bada Dekhein)
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('organize')}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'organize' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white'}`}
+                                >
+                                    <Icons.Layers />
+                                    Organize & Merge
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('converter')}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'converter' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white'}`}
+                                >
+                                    <Icons.Photo />
+                                    PDF ⇄ JPG Converter
+                                </button>
+                            </div>
+
+                            {/* Upload Action Group */}
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => fileInputRef.current.click()}
+                                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-indigo-600/20 transition-all"
+                                >
+                                    <Icons.FileText /> + Add PDF
+                                </button>
+                                <button
+                                    onClick={() => imageInputRef.current.click()}
+                                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-2 border border-white/10 transition-all shadow-md"
+                                >
+                                    <Icons.Photo /> + Add Image
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* HIDDEN FILE INPUTS */}
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={(e) => handleFiles(e.target.files)}
+                        accept=".pdf"
+                        multiple
+                        className="hidden"
+                    />
+                    <input
+                        type="file"
+                        ref={imageInputRef}
+                        onChange={(e) => handleFiles(e.target.files)}
+                        accept="image/jpeg,image/png,image/jpg"
+                        multiple
+                        className="hidden"
+                    />
+
+                    {/* MAIN CONTENT AREA */}
+                    <main className="max-w-7xl mx-auto w-full p-6 flex-1 flex flex-col gap-6">
+
+                        {/* EMPTY STATE / UPLOAD HERO */}
+                        {pages.length === 0 && !loading && (
+                            <div className="flex-1 flex flex-col items-center justify-center py-20 px-4">
+                                <div className="max-w-xl w-full p-12 glass-panel rounded-3xl border-2 border-dashed border-indigo-500/30 text-center relative overflow-hidden group hover:border-indigo-500/60 transition-all">
+                                    <div className="w-20 h-20 rounded-3xl bg-indigo-600/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mx-auto mb-6 group-hover:scale-110 transition-transform">
+                                        <Icons.Upload />
+                                    </div>
+                                    <h2 className="text-2xl font-black text-white font-heading mb-3">PDF ya Images Upload Karein</h2>
+                                    <p className="text-slate-400 text-sm mb-8 leading-relaxed">
+                                        PDF files upload karein. Har page ka content <b>bada aur bilkul saaf (HD)</b> dikhega jisse rename karna behad aasan hoga!
+                                    </p>
+                                    <div className="flex justify-center gap-4">
+                                        <button
+                                            onClick={() => fileInputRef.current.click()}
+                                            className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-xl shadow-indigo-600/30 flex items-center gap-2 transition-all"
+                                        >
+                                            <Icons.FileText /> Select PDF Files
+                                        </button>
+                                        <button
+                                            onClick={() => imageInputRef.current.click()}
+                                            className="px-6 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold border border-white/10 flex items-center gap-2 transition-all"
+                                        >
+                                            <Icons.Photo /> Select Images
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ========================================================= */}
+                        {/* TAB 1: SPLIT & RENAME STUDIO (SIDE-BY-SIDE FOCUSED VIEW) */}
+                        {/* ========================================================= */}
+                        {activeTab === 'split' && pages.length > 0 && activeFocusedPage && (
+                            <div className="space-y-4">
+                                {/* Top Control Bar */}
+                                <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-white/10">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs font-bold text-slate-300">
+                                            Viewing Page <span className="text-indigo-400 font-black">{focusedPageIndex + 1}</span> of <span className="text-white font-bold">{pages.length}</span>
+                                        </span>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={prevRenamePage}
+                                                disabled={focusedPageIndex === 0}
+                                                className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white text-xs font-bold flex items-center gap-1"
+                                            >
+                                                <Icons.ArrowLeft /> Pichla Page
+                                            </button>
+                                            <button
+                                                onClick={nextRenamePage}
+                                                disabled={focusedPageIndex === pages.length - 1}
+                                                className="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white text-xs font-bold flex items-center gap-1 shadow"
+                                            >
+                                                Agla Page <Icons.ArrowRight />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* ZOOM CONTROLS */}
+                                    <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-white/10">
+                                        <span className="text-[11px] font-bold text-slate-400">Zoom:</span>
+                                        <button
+                                            onClick={() => setZoomLevel(prev => Math.max(50, prev - 25))}
+                                            className="p-1 rounded hover:bg-slate-800 text-slate-300"
+                                            title="Zoom Out"
+                                        >
+                                            <Icons.ZoomOut />
+                                        </button>
+                                        <span className="text-xs font-mono font-bold text-indigo-300 min-w-[45px] text-center">{zoomLevel}%</span>
+                                        <button
+                                            onClick={() => setZoomLevel(prev => Math.min(250, prev + 25))}
+                                            className="p-1 rounded hover:bg-slate-800 text-slate-300"
+                                            title="Zoom In"
+                                        >
+                                            <Icons.ZoomIn />
+                                        </button>
+                                        <button
+                                            onClick={() => setZoomLevel(100)}
+                                            className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-400"
+                                        >
+                                            Fit (100%)
+                                        </button>
+                                    </div>
+
+                                    {/* BATCH DOWNLOAD BUTTON */}
+                                    <button
+                                        onClick={splitAndDownloadAll}
+                                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-lg flex items-center gap-2"
+                                    >
+                                        <Icons.Scissors /> Download All Separate PDFs ({pages.length})
+                                    </button>
+                                </div>
+
+                                {/* MAIN SIDE-BY-SIDE WORKSPACE */}
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                                    
+                                    {/* LEFT: HUGE HIGH-RESOLUTION ZOOMABLE DOCUMENT VIEWER (7 COLS) */}
+                                    <div className="lg:col-span-7 glass-panel rounded-3xl p-4 flex flex-col border border-white/10 overflow-hidden shadow-2xl">
+                                        <div className="flex items-center justify-between pb-3 border-b border-white/5 mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-bold text-slate-400">Original Document:</span>
+                                                <span className="text-xs font-bold text-white truncate max-w-xs">{activeFocusedPage.fileName}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => downloadPageAsPdf(activeFocusedPage)}
+                                                    className="px-3 py-1 rounded-xl bg-indigo-600/40 hover:bg-indigo-600 text-white text-xs font-bold flex items-center gap-1.5 border border-indigo-400/40 transition-all shadow"
+                                                >
+                                                    <Icons.DownloadArrow /> Is Page Ki PDF Download
+                                                </button>
+                                                <button
+                                                    onClick={() => openEditor(activeFocusedPage)}
+                                                    className="px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 border border-white/10"
+                                                >
+                                                    <Icons.Edit /> Edit
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* SCROLLABLE ZOOMABLE HIGH-RES CANVAS/IMAGE */}
+                                        <div className="w-full h-[620px] bg-slate-950 rounded-2xl overflow-auto p-4 flex items-center justify-center border border-white/5 relative">
+                                            <img
+                                                src={activeFocusedPage.image}
+                                                alt="High Resolution Document Page"
+                                                style={{
+                                                    width: `${zoomLevel}%`,
+                                                    maxWidth: 'none',
+                                                    transform: `rotate(${activeFocusedPage.rotation}deg)`
+                                                }}
+                                                className="rounded-lg shadow-2xl object-contain transition-all duration-150 select-none"
+                                            />
+                                        </div>
+
+                                        {/* EXTRACTED TEXT BAR AT BOTTOM */}
+                                        <div className="mt-3 p-3 bg-slate-900/60 rounded-xl border border-white/5">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-[10px] uppercase font-bold text-slate-400">📝 Page Text Content (Padhein):</span>
+                                                <span className="text-[10px] text-slate-500 font-mono">{activeFocusedPage.textContent?.length || 0} characters</span>
+                                            </div>
+                                            <p className="text-xs font-mono text-slate-300 max-h-20 overflow-y-auto leading-relaxed select-all">
+                                                {activeFocusedPage.textContent || "(Is page par selectable text nahi mila, ye ek scanned image/photo ho sakti hai. Upar badi preview me padhein.)"}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* RIGHT: INSTANT RENAME CONTROL & THUMBNAIL TRACKER (5 COLS) */}
+                                    <div className="lg:col-span-5 space-y-4">
+                                        {/* ACTIVE RENAME CARD */}
+                                        <div className="glass-panel rounded-3xl p-6 border-2 border-indigo-500/40 shadow-2xl space-y-5">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                                    Page #{focusedPageIndex + 1} Renaming
+                                                </span>
+                                                <span className="text-xs text-slate-400">Press <b>Enter</b> for Next Page</span>
+                                            </div>
+
+                                            <div>
+                                                <label className="text-xs font-black text-white block mb-2">
+                                                    Is Page Ka Naya Naam Likhein:
+                                                </label>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        ref={renameInputRef}
+                                                        type="text"
+                                                        value={activeFocusedPage.customName}
+                                                        onChange={(e) => updatePageName(activeFocusedPage.id, e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                nextRenamePage();
+                                                            }
+                                                        }}
+                                                        placeholder="Jaise: Aadhaar_Card, Marksheet_10th..."
+                                                        className="w-full px-4 py-3 bg-slate-950 border-2 border-indigo-500/50 rounded-2xl text-sm font-bold text-white outline-none focus:border-indigo-400 shadow-inner"
+                                                    />
+                                                    <span className="text-sm font-bold text-slate-400">.pdf</span>
+                                                </div>
+                                            </div>
+
+                                            {/* NAVIGATION BUTTONS */}
+                                            <div className="flex items-center gap-3 pt-2">
+                                                <button
+                                                    onClick={prevRenamePage}
+                                                    disabled={focusedPageIndex === 0}
+                                                    className="flex-1 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all"
+                                                >
+                                                    <Icons.ArrowLeft /> Pichla Page
+                                                </button>
+                                                <button
+                                                    onClick={nextRenamePage}
+                                                    disabled={focusedPageIndex === pages.length - 1}
+                                                    className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all"
+                                                >
+                                                    Agla Page <Icons.ArrowRight />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* ALL PAGES QUICK SELECTOR STRIP */}
+                                        <div className="glass-panel rounded-3xl p-4 border border-white/10 space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-bold text-slate-300">Sabhi Pages Ki List ({pages.length})</span>
+                                                <span className="text-[11px] text-slate-500">Kisi bhi page par click karke dekhein</span>
+                                            </div>
+
+                                            <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1">
+                                                {pages.map((p, idx) => {
+                                                    const isCurrent = idx === focusedPageIndex;
+                                                    return (
+                                                        <div
+                                                            key={p.id}
+                                                            onClick={() => setFocusedPageIndex(idx)}
+                                                            className={`p-2.5 rounded-2xl cursor-pointer flex items-center gap-3 transition-all ${isCurrent ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-900/60 hover:bg-slate-800 text-slate-300 border border-white/5'}`}
+                                                        >
+                                                            <div className="w-10 h-14 bg-slate-950 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center p-0.5 border border-white/10">
+                                                                <img src={p.image} className="max-h-full object-contain" />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs font-black">Page {idx + 1}</span>
+                                                                    <span className="text-[10px] opacity-75">{p.fileName}</span>
+                                                                </div>
+                                                                <p className="text-xs truncate font-mono mt-0.5 font-bold">
+                                                                    {p.customName}.pdf
+                                                                </p>
+                                                            </div>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    downloadPageAsPdf(p);
+                                                                }}
+                                                                className={`p-2 rounded-xl transition-all ${isCurrent ? 'bg-white/20 hover:bg-white/30 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}`}
+                                                                title="Download PDF"
+                                                            >
+                                                                <Icons.DownloadArrow />
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ========================================================= */}
+                        {/* TAB 2: ORGANIZE & MERGE VIEW */}
+                        {/* ========================================================= */}
+                        {activeTab === 'organize' && pages.length > 0 && (
+                            <div className="space-y-4">
+                                <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-white/10">
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={selectAll}
+                                            className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10"
+                                        >
+                                            {selectedPageIds.length === pages.length ? "Deselect All" : "Select All"}
+                                        </button>
+                                        <span className="text-xs font-bold text-slate-400">
+                                            Total: <span className="text-white">{pages.length} Pages</span>
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <label className="text-xs font-bold text-slate-400">Save As Document Name:</label>
+                                        <input
+                                            type="text"
+                                            value={mergedFileName}
+                                            onChange={(e) => setMergedFileName(e.target.value)}
+                                            className="px-3 py-1.5 bg-slate-900 border border-white/10 rounded-xl text-xs font-bold text-white outline-none focus:border-indigo-500"
+                                        />
+                                        <span className="text-xs text-slate-500 font-bold">.pdf</span>
+                                    </div>
+
+                                    <button
+                                        onClick={() => mergeAndSavePdf(false)}
+                                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-black shadow-lg shadow-indigo-600/30 flex items-center gap-2"
+                                    >
+                                        <Icons.Download /> Merge & Download Master PDF
+                                    </button>
+                                </div>
+
+                                {/* Page Cards Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                                    {filteredPages.map((page, idx) => {
+                                        const isSelected = selectedPageIds.includes(page.id);
+                                        return (
+                                            <div
+                                                key={page.id}
+                                                className={`glass-panel rounded-2xl overflow-hidden border transition-all flex flex-col group ${isSelected ? 'border-indigo-500 ring-2 ring-indigo-500/30 shadow-xl' : 'border-white/10 hover:border-white/20'}`}
+                                            >
+                                                {/* Card Header with DIRECT ARROW DOWNLOAD BUTTON */}
+                                                <div className="p-3 bg-slate-900/60 border-b border-white/5 flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={() => toggleSelect(page.id)}
+                                                            className="w-4 h-4 rounded text-indigo-600 bg-slate-800 border-white/20 cursor-pointer"
+                                                        />
+                                                        <span className="text-xs font-bold text-indigo-300">Page {idx + 1}</span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-1.5">
+                                                        {/* Top direct download arrow button */}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                downloadPageAsPdf(page);
+                                                            }}
+                                                            className="px-2.5 py-1 rounded-lg bg-indigo-600/40 hover:bg-indigo-600 text-indigo-100 hover:text-white border border-indigo-500/50 flex items-center gap-1 text-[11px] font-bold shadow transition-all active:scale-95"
+                                                            title="Teer par click karein: Is page ko direct PDF download karein"
+                                                        >
+                                                            <Icons.DownloadArrow />
+                                                            <span>PDF</span>
+                                                        </button>
+
+                                                        <button
+                                                            onClick={() => movePage(idx, -1)}
+                                                            disabled={idx === 0}
+                                                            title="Peeche karein"
+                                                            className="p-1 text-slate-400 hover:text-white disabled:opacity-30 rounded"
+                                                        >
+                                                            <Icons.ArrowLeft />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => movePage(idx, 1)}
+                                                            disabled={idx === filteredPages.length - 1}
+                                                            title="Aage karein"
+                                                            className="p-1 text-slate-400 hover:text-white disabled:opacity-30 rounded"
+                                                        >
+                                                            <Icons.ArrowRight />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => deletePage(page.id)}
+                                                            title="Delete Page"
+                                                            className="p-1 text-rose-400 hover:text-rose-300 rounded"
+                                                        >
+                                                            <Icons.Trash />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Thumbnail Preview Canvas with Quick Zoom Eye Button */}
+                                                <div 
+                                                    onClick={() => setInspectingPage(page)}
+                                                    className="relative p-2 bg-slate-950 flex items-center justify-center min-h-[220px] max-h-[260px] overflow-hidden cursor-pointer"
+                                                    title="Click karke Bada Dekhein (Inspect)"
+                                                >
+                                                    <img
+                                                        src={page.image}
+                                                        alt="Page Thumbnail"
+                                                        style={{ transform: `rotate(${page.rotation}deg)` }}
+                                                        className="max-h-[220px] w-auto object-contain rounded shadow-lg transition-transform"
+                                                    />
+
+                                                    {page.isEdited && (
+                                                        <span className="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                                            Edited
+                                                        </span>
+                                                    )}
+
+                                                    {/* Hover Overlay Controls */}
+                                                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-3">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setInspectingPage(page);
+                                                            }}
+                                                            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl text-xs font-black flex items-center gap-1.5"
+                                                        >
+                                                            <Icons.Eye /> Bada Dekhein (Zoom)
+                                                        </button>
+
+                                                        <div className="flex items-center gap-2 pt-1">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    openEditor(page);
+                                                                }}
+                                                                className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1"
+                                                            >
+                                                                <Icons.Edit /> Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    rotatePage(page.id);
+                                                                }}
+                                                                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white"
+                                                            >
+                                                                <Icons.Rotate />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    downloadPageAsJpg(page);
+                                                                }}
+                                                                className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold"
+                                                            >
+                                                                JPG
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Text Preview Box */}
+                                                <div className="p-3 bg-slate-950/70 border-t border-white/5 space-y-1">
+                                                    <p className="text-[11px] font-bold text-slate-300 truncate" title={page.customName}>
+                                                        {page.customName}
+                                                    </p>
+                                                    <p className="text-[10px] text-slate-400 font-mono truncate" title={page.textContent || ""}>
+                                                        {page.textContent || "(Scanned Image / No Text)"}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ========================================================= */}
+                        {/* TAB 3: CONVERTER (PDF TO JPG / JPG TO PDF) */}
+                        {/* ========================================================= */}
+                        {activeTab === 'converter' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="glass-panel p-8 rounded-3xl border border-white/10 space-y-6">
+                                    <div className="w-14 h-14 rounded-2xl bg-indigo-600/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                                        <Icons.Photo />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-white font-heading">PDF to JPG Converter</h3>
+                                        <p className="text-slate-400 text-xs mt-1">PDF ke sabhi pages ko alag-alag high quality HD JPG image me extract karein.</p>
+                                    </div>
+                                    <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/5 space-y-2">
+                                        <p className="text-xs font-bold text-slate-300">Total Loaded Pages: {pages.length}</p>
+                                        <p className="text-xs text-slate-400">Sabhi pages ka ZIP ek click me download karein.</p>
+                                    </div>
+                                    <button
+                                        onClick={() => exportPagesAsJpgZip(false)}
+                                        disabled={!pages.length}
+                                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg"
+                                    >
+                                        <Icons.Download /> Download All as JPG (ZIP)
+                                    </button>
+                                </div>
+
+                                <div className="glass-panel p-8 rounded-3xl border border-white/10 space-y-6">
+                                    <div className="w-14 h-14 rounded-2xl bg-purple-600/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                                        <Icons.FileText />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-white font-heading">JPG / Photos to PDF</h3>
+                                        <p className="text-slate-400 text-xs mt-1">Apni photos aur images ko jodkar ek PDF document banayein.</p>
+                                    </div>
+                                    <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/5 space-y-2">
+                                        <p className="text-xs font-bold text-slate-300">Images in grid: {pages.filter(p => p.type === 'image').length}</p>
+                                        <p className="text-xs text-slate-400">Nayi images add karein aur unhe PDF me convert karein.</p>
+                                    </div>
+                                    <button
+                                        onClick={() => imageInputRef.current.click()}
+                                        className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold border border-white/10 flex items-center justify-center gap-2"
+                                    >
+                                        <Icons.Photo /> + Upload More Images
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* ============================================================== */}
+                    {/* GLOBAL FULLSCREEN QUICK INSPECT MODAL (WITH RENAME BAR) */}
+                    {/* ============================================================== */}
+                    {inspectingPage && (
+                        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+                            <div className="glass-modal max-w-5xl w-full max-h-[95vh] rounded-3xl flex flex-col overflow-hidden shadow-2xl border border-white/10">
+                                {/* Header with Rename bar */}
+                                <div className="p-4 bg-slate-900/90 border-b border-white/10 flex flex-wrap items-center justify-between gap-4">
+                                    <div className="flex items-center gap-2 flex-1 max-w-md">
+                                        <span className="text-xs font-bold text-slate-400">File Name:</span>
+                                        <input
+                                            type="text"
+                                            value={inspectingPage.customName}
+                                            onChange={(e) => updatePageName(inspectingPage.id, e.target.value)}
+                                            className="w-full px-3 py-1.5 bg-slate-950 border border-indigo-500/40 rounded-xl text-xs font-bold text-white outline-none focus:border-indigo-400"
+                                        />
+                                        <span className="text-xs font-bold text-slate-400">.pdf</span>
+                                    </div>
+
+                                    {/* ZOOM CONTROLS */}
+                                    <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-white/10">
+                                        <button onClick={() => setModalZoom(prev => Math.max(50, prev - 25))} className="p-1 text-slate-300 hover:text-white">
+                                            <Icons.ZoomOut />
+                                        </button>
+                                        <span className="text-xs font-bold font-mono text-indigo-300 min-w-[40px] text-center">{modalZoom}%</span>
+                                        <button onClick={() => setModalZoom(prev => Math.min(250, prev + 25))} className="p-1 text-slate-300 hover:text-white">
+                                            <Icons.ZoomIn />
+                                        </button>
+                                        <button onClick={() => setModalZoom(100)} className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+                                            100%
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => downloadPageAsPdf(inspectingPage)}
+                                            className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow"
+                                        >
+                                            <Icons.DownloadArrow /> Download PDF
+                                        </button>
+                                        <button
+                                            onClick={() => setInspectingPage(null)}
+                                            className="p-1.5 text-slate-400 hover:text-white rounded-lg"
+                                        >
+                                            <Icons.X />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Large Image Area */}
+                                <div className="flex-1 overflow-auto p-6 bg-slate-950 flex items-center justify-center min-h-[500px]">
+                                    <img
+                                        src={inspectingPage.image}
+                                        alt="Document Detail"
+                                        style={{
+                                            width: `${modalZoom}%`,
+                                            maxWidth: 'none',
+                                            transform: `rotate(${inspectingPage.rotation}deg)`
+                                        }}
+                                        className="rounded-lg shadow-2xl object-contain transition-all duration-150"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ============================================================== */}
+                    {/* INTERACTIVE PAGE EDITOR MODAL */}
+                    {/* ============================================================== */}
+                    {editingPage && (
+                        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+                            <div className="glass-modal max-w-5xl w-full max-h-[94vh] rounded-3xl flex flex-col overflow-hidden shadow-2xl border border-white/10">
+                                <div className="p-4 bg-slate-900/80 border-b border-white/10 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                            Page Editor
+                                        </span>
+                                        <h3 className="text-sm font-bold text-white">{editingPage.customName}</h3>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={savePageEdits}
+                                            className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg"
+                                        >
+                                            <Icons.Check /> Save Changes to Page
+                                        </button>
+                                        <button
+                                            onClick={closeEditor}
+                                            className="p-1.5 text-slate-400 hover:text-white rounded-lg"
+                                        >
+                                            <Icons.X />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="px-4 py-2.5 bg-slate-950/70 border-b border-white/10 flex flex-wrap items-center justify-between gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => {
+                                                setEditorTool('whitener');
+                                                setSelectedStampIdx(null);
+                                                redrawEditorCanvas(editingPage, annotations, null);
+                                            }}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${editorTool === 'whitener' ? 'bg-white text-slate-900 shadow' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                                            title="Whiteout / Mask unwanted text"
+                                        >
+                                            <Icons.Eraser /> Whitener (Erase)
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setEditorTool('highlighter');
+                                                setSelectedStampIdx(null);
+                                                redrawEditorCanvas(editingPage, annotations, null);
+                                            }}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${editorTool === 'highlighter' ? 'bg-amber-400 text-slate-950 shadow' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                                        >
+                                            <Icons.Highlighter /> Highlighter
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setEditorTool('text');
+                                                setSelectedStampIdx(null);
+                                                redrawEditorCanvas(editingPage, annotations, null);
+                                            }}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${editorTool === 'text' ? 'bg-indigo-600 text-white shadow' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                                        >
+                                            <Icons.Type /> Add Text
+                                        </button>
+                                        <button
+                                            onClick={() => stampInputRef.current.click()}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${editorTool === 'stamp' ? 'bg-purple-600 text-white shadow' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                                        >
+                                            <Icons.Photo /> + Add Image / Stamp
+                                        </button>
+                                        <input
+                                            type="file"
+                                            ref={stampInputRef}
+                                            onChange={handleAddImageStamp}
+                                            accept="image/*"
+                                            className="hidden"
+                                        />
+                                    </div>
+
+                                    {/* TOOL SPECIFIC CONTROLS & RESIZE TOOLS */}
+                                    <div className="flex items-center gap-3">
+                                        {/* TEXT TOOL CONTROLS */}
+                                        {editorTool === 'text' && (
+                                            <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-indigo-500/30">
+                                                <span className="text-[11px] font-bold text-indigo-300">Text:</span>
+                                                <input
+                                                    type="text"
+                                                    value={textInput}
+                                                    onChange={(e) => {
+                                                        setTextInput(e.target.value);
+                                                        updateSelectedTextAnnotation('text', e.target.value);
+                                                    }}
+                                                    placeholder="Text likhein..."
+                                                    className="px-2.5 py-1 bg-slate-950 border border-white/20 rounded-lg text-xs font-bold text-white outline-none focus:border-indigo-400 w-36"
+                                                />
+                                                <span className="text-[11px] font-bold text-slate-400 ml-1">Size:</span>
+                                                <input
+                                                    type="number"
+                                                    min="10"
+                                                    max="150"
+                                                    value={textSize}
+                                                    onChange={(e) => {
+                                                        const sz = Math.max(8, Number(e.target.value));
+                                                        setTextSize(sz);
+                                                        updateSelectedTextAnnotation('size', sz);
+                                                    }}
+                                                    className="w-14 px-1.5 py-1 bg-slate-950 border border-white/20 rounded-lg text-xs font-bold text-white text-center outline-none"
+                                                />
+                                                <div className="flex items-center gap-1">
+                                                    <button onClick={() => {
+                                                        const sz = Math.max(10, textSize - 4);
+                                                        setTextSize(sz);
+                                                        updateSelectedTextAnnotation('size', sz);
+                                                    }} className="px-1.5 py-0.5 rounded bg-slate-800 text-xs font-bold text-white hover:bg-slate-700">-</button>
+                                                    <button onClick={() => {
+                                                        const sz = Math.min(150, textSize + 4);
+                                                        setTextSize(sz);
+                                                        updateSelectedTextAnnotation('size', sz);
+                                                    }} className="px-1.5 py-0.5 rounded bg-slate-800 text-xs font-bold text-white hover:bg-slate-700">+</button>
+                                                </div>
+                                                <span className="text-[11px] font-bold text-slate-400 ml-1">Color:</span>
+                                                <input
+                                                    type="color"
+                                                    value={textColor}
+                                                    onChange={(e) => {
+                                                        setTextColor(e.target.value);
+                                                        updateSelectedTextAnnotation('color', e.target.value);
+                                                    }}
+                                                    className="w-7 h-7 rounded-lg border-0 bg-transparent cursor-pointer"
+                                                />
+                                                {selectedStampIdx !== null && annotations[selectedStampIdx]?.type === 'text' ? (
+                                                    <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-white/10">
+                                                        <span className="text-[10px] text-emerald-300 font-bold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">👆 Drag to Move</span>
+                                                        <button onClick={deleteSelectedAnnotation} className="p-1 text-rose-400 hover:text-rose-300" title="Delete Text"><Icons.Trash /></button>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-[10px] text-indigo-300 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-500/30">Click to Place · Drag to Move</span>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* HIGHLIGHTER COLOR CONTROLS */}
+                                        {editorTool === 'highlighter' && (
+                                            <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-amber-500/30">
+                                                <span className="text-[11px] font-bold text-amber-300">Highlight Color:</span>
+                                                <button
+                                                    onClick={() => setHighlightColor('rgba(250, 204, 21, 0.45)')}
+                                                    className={`w-6 h-6 rounded-full bg-yellow-400 border-2 ${highlightColor.includes('250, 204, 21') ? 'border-white scale-110 shadow' : 'border-transparent opacity-70'}`}
+                                                    title="Yellow"
+                                                />
+                                                <button
+                                                    onClick={() => setHighlightColor('rgba(74, 222, 128, 0.45)')}
+                                                    className={`w-6 h-6 rounded-full bg-green-400 border-2 ${highlightColor.includes('74, 222, 128') ? 'border-white scale-110 shadow' : 'border-transparent opacity-70'}`}
+                                                    title="Green"
+                                                />
+                                                <button
+                                                    onClick={() => setHighlightColor('rgba(96, 165, 250, 0.45)')}
+                                                    className={`w-6 h-6 rounded-full bg-blue-400 border-2 ${highlightColor.includes('96, 165, 250') ? 'border-white scale-110 shadow' : 'border-transparent opacity-70'}`}
+                                                    title="Blue"
+                                                />
+                                                <button
+                                                    onClick={() => setHighlightColor('rgba(244, 114, 182, 0.45)')}
+                                                    className={`w-6 h-6 rounded-full bg-pink-400 border-2 ${highlightColor.includes('244, 114, 182') ? 'border-white scale-110 shadow' : 'border-transparent opacity-70'}`}
+                                                    title="Pink"
+                                                />
+                                                <span className="text-[10px] text-amber-200/80 ml-2">Drag karke line highlight karein</span>
+                                            </div>
+                                        )}
+
+                                        {/* WHITENER INSTRUCTION */}
+                                        {editorTool === 'whitener' && (
+                                            <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-white/10">
+                                                <span className="text-[11px] text-slate-300">Whiteout karne ke liye mouse drag karke box banayein</span>
+                                            </div>
+                                        )}
+
+                                        {/* IMAGE STAMP CONTROLS */}
+                                        {(editorTool === 'stamp' || selectedStampIdx !== null) && annotations[selectedStampIdx] && (
+                                            <div className="flex items-center gap-2 bg-slate-900/80 px-3 py-1 rounded-xl border border-indigo-500/30">
+                                                <span className="text-[11px] font-bold text-indigo-300">Image Size:</span>
+                                                <button onClick={() => resizeSelectedStamp(0.85)} className="px-2 py-0.5 rounded bg-slate-800 text-xs font-bold text-white hover:bg-slate-700">- Chota</button>
+                                                <button onClick={() => resizeSelectedStamp(1.15)} className="px-2 py-0.5 rounded bg-slate-800 text-xs font-bold text-white hover:bg-slate-700">+ Bada</button>
+                                                <input
+                                                    type="range"
+                                                    min="40"
+                                                    max="600"
+                                                    value={annotations[selectedStampIdx]?.w || 150}
+                                                    onChange={(e) => setSelectedStampWidth(Number(e.target.value))}
+                                                    className="w-20 cursor-pointer accent-indigo-500"
+                                                />
+                                                <button onClick={deleteSelectedStamp} className="p-1 text-rose-400 hover:text-rose-300"><Icons.Trash /></button>
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center gap-1 border-l border-white/10 pl-3">
+                                            <button onClick={undoLastAnnotation} className="px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-white">Undo</button>
+                                            <button onClick={clearAllAnnotations} className="px-2.5 py-1 text-xs font-bold text-rose-400 hover:text-rose-300">Clear</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 overflow-auto p-6 bg-slate-950 flex items-center justify-center min-h-[480px]">
+                                    <canvas
+                                        ref={editorCanvasRef}
+                                        onMouseDown={handleCanvasMouseDown}
+                                        onMouseMove={handleCanvasMouseMove}
+                                        onMouseUp={handleCanvasMouseUp}
+                                        className="shadow-2xl rounded border border-white/20 cursor-crosshair max-w-full max-h-[70vh] object-contain"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* PROCESSING MODAL OVERLAY */}
+                    {processingMsg && (
+                        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center gap-4">
+                            <Icons.Loader />
+                            <p className="text-white font-bold text-sm">{processingMsg}</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

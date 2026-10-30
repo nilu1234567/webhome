@@ -90,6 +90,10 @@ app.get('/chat/sw.js', (req, res) => {
 app.use('/', express.static(path.join(__dirname, 'dist')));
 // Chat static files at /chat
 app.use('/chat', express.static(path.join(__dirname, 'chat')));
+// PDF & Image Studio at /pdf
+app.use('/pdf', express.static(path.join(__dirname, 'pdf')));
+app.get('/pdf', (req, res) => res.redirect('/pdf/'));
+app.get('/pdf/*', (req, res) => res.sendFile(path.join(__dirname, 'pdf', 'index.html')));
 // Uploaded images
 app.use('/uploads', express.static(uploadsDir));
 
