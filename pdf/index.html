@@ -365,7 +365,7 @@
                     link.download = `PDF_Pages_Images.zip`;
                     link.click();
                 } catch (err) {
-                    alert("JPG Export Error: " + err.message);
+                    alert("JPG export error: " + err.message);
                 } finally {
                     setProcessingMsg(null);
                 }
@@ -404,7 +404,7 @@
                     link.download = `${page.customName || 'Page'}.pdf`;
                     link.click();
                 } catch (err) {
-                    alert("PDF Export Error: " + err.message);
+                    alert("PDF export error: " + err.message);
                 } finally {
                     setProcessingMsg(null);
                 }
@@ -965,7 +965,7 @@
                                     </div>
                                     <h2 className="text-2xl font-black text-white font-heading mb-3">Upload PDF Documents or Images</h2>
                                     <p className="text-slate-400 text-sm mb-8 leading-relaxed">
-                                        Upload PDF files or images. Each page displays in <b>Ultra-HD Resolution</b> with live text extraction for seamless renaming and editing.
+                                        Upload PDF files or images. Each page displays in <b>Ultra-HD Resolution</b> with live text extraction for effortless renaming and editing.
                                     </p>
                                     <div className="flex justify-center gap-4">
                                         <button
@@ -1002,14 +1002,14 @@
                                                 disabled={focusedPageIndex === 0}
                                                 className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white text-xs font-bold flex items-center gap-1"
                                             >
-                                                <Icons.ArrowLeft /> Previous Page
+                                                <Icons.ArrowLeft /> Previous
                                             </button>
                                             <button
                                                 onClick={nextRenamePage}
                                                 disabled={focusedPageIndex === pages.length - 1}
                                                 className="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white text-xs font-bold flex items-center gap-1 shadow"
                                             >
-                                                Next Page <Icons.ArrowRight />
+                                                Next <Icons.ArrowRight />
                                             </button>
                                         </div>
                                     </div>
@@ -1064,13 +1064,13 @@
                                                     onClick={() => downloadPageAsPdf(activeFocusedPage)}
                                                     className="px-3 py-1 rounded-xl bg-indigo-600/40 hover:bg-indigo-600 text-white text-xs font-bold flex items-center gap-1.5 border border-indigo-400/40 transition-all shadow"
                                                 >
-                                                    <Icons.DownloadArrow /> Download Single Page PDF
+                                                    <Icons.DownloadArrow /> Download Page PDF
                                                 </button>
                                                 <button
                                                     onClick={() => openEditor(activeFocusedPage)}
                                                     className="px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 border border-white/10"
                                                 >
-                                                    <Icons.Edit /> Edit Page
+                                                    <Icons.Edit /> Edit
                                                 </button>
                                             </div>
                                         </div>
@@ -1096,7 +1096,7 @@
                                                 <span className="text-[10px] text-slate-500 font-mono">{activeFocusedPage.textContent?.length || 0} characters</span>
                                             </div>
                                             <p className="text-xs font-mono text-slate-300 max-h-20 overflow-y-auto leading-relaxed select-all">
-                                                {activeFocusedPage.textContent || "(No selectable text detected on this page. It may be a scanned photo or image.)"}
+                                                {activeFocusedPage.textContent || "(No selectable text detected on this page. It may be a scanned document or image.)"}
                                             </p>
                                         </div>
                                     </div>
@@ -1114,7 +1114,7 @@
 
                                             <div>
                                                 <label className="text-xs font-black text-white block mb-2">
-                                                    Enter New Page Name:
+                                                    Enter Page File Name:
                                                 </label>
                                                 <div className="flex items-center gap-2">
                                                     <input
@@ -1127,7 +1127,7 @@
                                                                 nextRenamePage();
                                                             }
                                                         }}
-                                                        placeholder="e.g. Invoice_2026, Document_Page_1..."
+                                                        placeholder="e.g. Document_Page_1, Invoice_2026..."
                                                         className="w-full px-4 py-3 bg-slate-950 border-2 border-indigo-500/50 rounded-2xl text-sm font-bold text-white outline-none focus:border-indigo-400 shadow-inner"
                                                     />
                                                     <span className="text-sm font-bold text-slate-400">.pdf</span>
@@ -1141,14 +1141,14 @@
                                                     disabled={focusedPageIndex === 0}
                                                     className="flex-1 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all"
                                                 >
-                                                    <Icons.ArrowLeft /> Previous Page
+                                                    <Icons.ArrowLeft /> Pichla Page
                                                 </button>
                                                 <button
                                                     onClick={nextRenamePage}
                                                     disabled={focusedPageIndex === pages.length - 1}
                                                     className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all"
                                                 >
-                                                    Next Page <Icons.ArrowRight />
+                                                    Agla Page <Icons.ArrowRight />
                                                 </button>
                                             </div>
                                         </div>
@@ -1157,7 +1157,7 @@
                                         <div className="glass-panel rounded-3xl p-4 border border-white/10 space-y-3">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-xs font-bold text-slate-300">All Pages List ({pages.length})</span>
-                                                <span className="text-[11px] text-slate-500">Click any page to inspect</span>
+                                                <span className="text-[11px] text-slate-500">Click any thumbnail to inspect</span>
                                             </div>
 
                                             <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1">
@@ -1267,7 +1267,7 @@
                                                                 downloadPageAsPdf(page);
                                                             }}
                                                             className="px-2.5 py-1 rounded-lg bg-indigo-600/40 hover:bg-indigo-600 text-indigo-100 hover:text-white border border-indigo-500/50 flex items-center gap-1 text-[11px] font-bold shadow transition-all active:scale-95"
-                                                            title="Click arrow: Download this single page as PDF"
+                                                            title="Click arrow to download this page as PDF"
                                                         >
                                                             <Icons.DownloadArrow />
                                                             <span>PDF</span>
@@ -1338,7 +1338,7 @@
                                                                 }}
                                                                 className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1"
                                                             >
-                                                                <Icons.Edit /> Edit Page
+                                                                <Icons.Edit /> Edit
                                                             </button>
                                                             <button
                                                                 onClick={(e) => {
@@ -1389,11 +1389,11 @@
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-black text-white font-heading">PDF to JPG Converter</h3>
-                                        <p className="text-slate-400 text-xs mt-1">Extract all PDF pages into high-resolution standalone JPG images.</p>
+                                        <p className="text-slate-400 text-xs mt-1">Extract all PDF pages into crystal-clear standalone HD JPG images.</p>
                                     </div>
                                     <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/5 space-y-2">
                                         <p className="text-xs font-bold text-slate-300">Total Loaded Pages: {pages.length}</p>
-                                        <p className="text-xs text-slate-400">Download all pages as a ZIP archive in one click.</p>
+                                        <p className="text-xs text-slate-400">Download all pages packaged as a ZIP archive.</p>
                                     </div>
                                     <button
                                         onClick={() => exportPagesAsJpgZip(false)}
@@ -1409,34 +1409,23 @@
                                         <Icons.FileText />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-black text-white font-heading">JPG / Photos to PDF Converter</h3>
-                                        <p className="text-slate-400 text-xs mt-1">Combine your photos and images into a single professional PDF document.</p>
+                                        <h3 className="text-xl font-black text-white font-heading">JPG / Images to PDF Converter</h3>
+                                        <p className="text-slate-400 text-xs mt-1">Combine multiple photos and images into a single professional PDF document.</p>
                                     </div>
                                     <div className="p-4 bg-slate-900/60 rounded-2xl border border-white/5 space-y-2">
-                                        <p className="text-xs font-bold text-slate-300">Images Loaded: {pages.filter(p => p.type === 'image').length}</p>
-                                        <p className="text-xs text-slate-400">Add images and convert them directly into PDF format.</p>
+                                        <p className="text-xs font-bold text-slate-300">Images in grid: {pages.filter(p => p.type === 'image').length}</p>
+                                        <p className="text-xs text-slate-400">Add images and convert them into PDF format.</p>
                                     </div>
                                     <button
                                         onClick={() => imageInputRef.current.click()}
                                         className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold border border-white/10 flex items-center justify-center gap-2"
                                     >
-                                        <Icons.Photo /> + Upload Images
+                                        <Icons.Photo /> + Upload More Images
                                     </button>
                                 </div>
                             </div>
                         )}
                     </main>
-
-                    {/* FOOTER BRANDING */}
-                    <footer className="border-t border-white/5 py-4 px-6 text-center text-xs text-slate-500">
-                        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-                            <span>Powered by <a href="https://rakesh.qd.je" target="_blank" className="text-indigo-400 hover:text-indigo-300 font-bold">Rakesh.qd.je</a></span>
-                            <span>Client-Side Secure PDF & Image Suite · Zero Server Uploads</span>
-                        </div>
-                    </footer>
-                </div>
-            );
-        }
 
                     {/* ============================================================== */}
                     {/* GLOBAL FULLSCREEN QUICK INSPECT MODAL (WITH RENAME BAR) */}
@@ -1674,7 +1663,7 @@
                                         {/* WHITENER INSTRUCTION */}
                                         {editorTool === 'whitener' && (
                                             <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-white/10">
-                                                <span className="text-[11px] text-slate-300">Drag mouse to create a whiteout mask box</span>
+                                                <span className="text-[11px] text-slate-300">Drag mouse to create a whiteout mask</span>
                                             </div>
                                         )}
 
