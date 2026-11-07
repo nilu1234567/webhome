@@ -1141,14 +1141,14 @@
                                                     disabled={focusedPageIndex === 0}
                                                     className="flex-1 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all"
                                                 >
-                                                    <Icons.ArrowLeft /> Pichla Page
+                                                    <Icons.ArrowLeft /> Previous
                                                 </button>
                                                 <button
                                                     onClick={nextRenamePage}
                                                     disabled={focusedPageIndex === pages.length - 1}
                                                     className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all"
                                                 >
-                                                    Agla Page <Icons.ArrowRight />
+                                                    Next <Icons.ArrowRight />
                                                 </button>
                                             </div>
                                         </div>
@@ -1230,12 +1230,32 @@
                                         <span className="text-xs text-slate-500 font-bold">.pdf</span>
                                     </div>
 
-                                    <button
-                                        onClick={() => mergeAndSavePdf(false)}
-                                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-black shadow-lg shadow-indigo-600/30 flex items-center gap-2"
-                                    >
-                                        <Icons.Download /> Merge & Download Master PDF
-                                    </button>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        {selectedPageIds.length > 0 && (
+                                            <>
+                                                <button
+                                                    onClick={() => mergeAndSavePdf(true)}
+                                                    className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-lg shadow-emerald-600/30 flex items-center gap-2 transition-all active:scale-95"
+                                                    title="Download only selected pages merged into PDF"
+                                                >
+                                                    <Icons.Download /> Download Selected ({selectedPageIds.length})
+                                                </button>
+                                                <button
+                                                    onClick={deleteSelected}
+                                                    className="px-3 py-2.5 rounded-xl bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 text-xs font-bold flex items-center gap-1.5 transition-all"
+                                                    title="Delete selected pages"
+                                                >
+                                                    <Icons.Trash /> Delete Selected ({selectedPageIds.length})
+                                                </button>
+                                            </>
+                                        )}
+                                        <button
+                                            onClick={() => mergeAndSavePdf(false)}
+                                            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-black shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all active:scale-95"
+                                        >
+                                            <Icons.Download /> Merge All ({pages.length})
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Page Cards Grid */}
